@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<!-- STEP 1: Prepare the canvas -->
+	<style>
+		html,
+		body {
+			overflow: hidden;
+			background-color: black;
+			color: white;
+			display: grid;
+			place-items: center;
+			font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
+		}
+
+		canvas {
+			width: 95%;
+			width: 300px;
+			height: 300px;
+			border-top: 5px dashed white;
+			border-bottom: 5px dashed white;
+		}
+
+		h1 {
+			text-align: center;
+			font-size: 2rem;
+		}
+
+		div>*:first-child {
+			text-align: center;
+		}
+
+		p {
+			-webkit-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+		}
+	</style>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+</head>
+
+<body>
+	<h1>Pong</h1>
+	<canvas></canvas>
+	<div>
+		<p><span id="points1">0</span> - <span id="points2">0</span></p>
+		<p>Press 'w' and 's' for player 1</p>
+		<p>Press 'ArrowUp' and 'ArrowDown' for player 2</p>
+		<p>Press 'r' to restart</p>
+	</div>
+
+	<!-- vertex Shader -->
+	<script id="vertex-shader" type="x-shader/x-vertex">
+		#version 300 es
+		precision mediump float;
+
+		in vec2 aCoordinates;
+
+		void main(void) {
+			gl_Position = vec4(aCoordinates, 0, 1);
+			gl_PointSize = 10.0;
+		}
+	</script>
+
+	<!-- fragment Shader -->
+	<script id="fragment-shader" type="x-shader/x-fragment">
+			#version 300 es
+			precision mediump float;
+			
+			out vec4 fragColor;
+			
+			uniform vec4 uColor;
+
+
+			void main(void) {
+				fragColor = uColor;
+		}
+	</script>
+
+	<script>
+		/* Global variables */
+		const canvas = document.querySelector('canvas')
+		const gl = canvas.getContext('webgl2', { antialias: false })
+		const p1 = document.querySelector('#points1')
+		const p2 = document.querySelector('#points2')
+
+		document.ontouchmove = onTouchMove
+		document.ontouchstart = onTouchStart
+		document.ontouchend = onTouchEnd
+
+		/* Ball variables */
+		let x = 0
+		let y = 0
+		let dx = Math.random() > 0.5 ? (Math.random() * 0.002 + 0.015) : -(Math.random() * 0.002 + 0.015)
+		let dy = Math.random() > 0.5 ? (Math.random() * 0.01 + 0.005) : -(Math.random() * 0.01 + 0.005)
+		let width = 0.05
+		let height = 0.05
+		let color = [1, 1, 1, 1.0]
+
+		/* Paddle variables */
+		let paddleHeight = 0.3
+		let paddleWidth = 0.05
+		let paddleColor = [1, 1, 1, 1.0]
+
+		// Player 1
+		let paddleX1 = -0.9
+		let paddleY1 = 0 - 0.15
+		let paddleDy1 = 0
+		let points1 = 0
+
+		// Player 2
+		let paddleX2 = 0.9
+		let paddleY2 = 0 - 0.15
+		let paddleDy2 = 0
+		let points2 = 0
+
+		/* Start animation */
+		window.onload = init()
+
+		/* Read key events */
+		// Player 1
+		window.addEventListener('keydown', function (event) {
+			if ((event.key === 'w' || event.key === 'W') && paddleY1 < 1 - paddleHeight) {
+				paddleDy1 = 0.02
+			} else if ((event.key === 's' || event.key === 'S') && paddleY1 > -1) {
+				paddleDy1 = -0.02
+			}
+		})
+
+		window.addEventListener('keyup', function (event) {
+			if (event.key === 'w' || event.key === 's' || event.key === 'W' || event.key === 'S') {
+				paddleDy1 = 0
+			}
+		})
+
+		// Player 2
+		window.addEventListener('keydown', function (event) {
+			if (event.key === 'ArrowUp' && paddleY2 < 1 - paddleHeight) {
+				paddleDy2 = 0.02
+			} else if (event.key === 'ArrowDown' && paddleY2 > -1) {
+				paddleDy2 = -0.02
+			}
+		})
+
+		window.addEventListener('keyup', function (event) {
+			if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+				paddleDy2 = 0
+			}
+		})
+
+		// Reload the game
+		window.addEventListener('keydown', function (event) {
+			if (event.key === 'r' || event.key === 'R') {
+				location.reload()
+			}
+		})
+
+		/* Mobile events */
+		function onTouchStart(e) {
+			touchobj = e.changedTouches[0] // reference first touch
+			prevTouchY = parseInt(touchobj.clientY)
+		}
+
+		function onTouchMove(e) {
+			touchobj = e.changedTouches[0] // reference first touch
+			touchY = parseInt(touchobj.clientY)
+			difY = touchY - prevTouchY
+			paddleDy1 = -difY * 0.005
+			prevTouchY = touchY
+		}
+
+		function onTouchEnd(e) {
+			paddleDy1 = 0
+		}
+
+
+		function init() {
+			// Create a vertex shader object
+			let vertShader = gl.createShader(gl.VERTEX_SHADER)
+
+			// Attach vertex shader source code
+			let script = document.getElementById('vertex-shader')
+			let shaderString = script.text.trim()
+			gl.shaderSource(vertShader, shaderString)
+
+			// Compile the vertex shader
+			gl.compileShader(vertShader)
+
+			// Create fragment shader object
+			let fragShader = gl.createShader(gl.FRAGMENT_SHADER)
+
+			// Attach fragment shader source code
+			script = document.getElementById('fragment-shader')
+			shaderString = script.text.trim()
+			gl.shaderSource(fragShader, shaderString)
+
+			// Compile the fragmentt shader
+			gl.compileShader(fragShader)
+
+			// Create a shader program object to store
+			// the combined shader program
+			let shaderProgram = gl.createProgram()
+
+			// Attach a vertex shader
+			gl.attachShader(shaderProgram, vertShader)
+
+			// Attach a fragment shader
+			gl.attachShader(shaderProgram, fragShader)
+
+			// Link both programs
+			gl.linkProgram(shaderProgram)
+
+			// Use the combined shader program object
+			gl.useProgram(shaderProgram)
+
+			/* STEP 3: Create buffer objects and associate shaders */
+			// Create an empty buffer object to store the vertex buffer
+			vertex_buffer = gl.createBuffer()
+
+			// Bind vertex buffer object
+			gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer)
+
+			// Get the attribute location
+			let coordLocation = gl.getAttribLocation(shaderProgram, "aCoordinates")
+
+			// Point an attribute to the currently bound VBO
+			gl.vertexAttribPointer(coordLocation, 2, gl.FLOAT, false, 0, 0)
+
+			// Enable the attribute
+			gl.enableVertexAttribArray(coordLocation)
+
+			// Unbind the buffer
+			gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
+			// look up uniform locations
+			colorLocation = gl.getUniformLocation(shaderProgram, "uColor")
+
+			render()
+		}
+
+		function render() {
+			// Clear the canvas
+			gl.clearColor(0, 0, 0, 1.0)
+
+			// Clear the color buffer bit
+			gl.clear(gl.COLOR_BUFFER_BIT)
+
+			// Set the view port
+			gl.viewport(0, 0, canvas.width, canvas.height)
+
+			// Bind appropriate array buffer to it
+			gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer)
+
+			// Ball
+			drawRectangle(x, y, width, height, color)
+
+			// Paddle
+			drawRectangle(paddleX1, paddleY1, paddleWidth, paddleHeight, paddleColor)
+			drawRectangle(paddleX2, paddleY2, paddleWidth, paddleHeight, paddleColor)
+
+			// draw a dashed line in the middle to separate the players
+			drawRectangle(0, -1, 0.01, 2, [0.3, 0.3, 0.3, 1])
+
+			// Unbind the buffer
+			gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
+			// Update the x and y position of the ball
+			x += dx
+			y += dy
+
+			// Update the y position of the paddle
+			paddleY1 += paddleDy1
+			paddleY2 += paddleDy2
+
+			// Check if the ball hits ceil or floor
+			if (y + dy > 1 - height || y + dy < -1) {
+				dy = -dy
+			}
+
+			// Check the paddle collision with ceil and floor
+			if (paddleY1 + paddleDy1 > 1 - paddleHeight || paddleY1 + paddleDy1 < -1) {
+				paddleDy1 = 0
+			}
+
+			if (paddleY2 + paddleDy2 > 1 - paddleHeight || paddleY2 + paddleDy2 < -1) {
+				paddleDy2 = 0
+			}
+
+			// Count 1 point for the player 1 and restart the game when the ball hits the right wall
+			if (x + dx > 1) {
+				points1++
+				updatePoints()
+				// restart the game
+				restart()
+			}
+
+			// Count 1 point for the player 2 and restart the game when the ball hits the left wall
+			if (x + dx < -1) {
+				points2++
+				updatePoints()
+				// restart the game
+				restart()
+			}
+
+			// Check if the ball hits the paddle 1
+			if (
+				x + width > paddleX1 &&
+				x < paddleX1 + paddleWidth &&
+				y + height > paddleY1 &&
+				y < paddleY1 + paddleHeight
+			) {
+				if (y + height <= paddleY1 + 0.05 || y >= paddleY1 + paddleHeight - 0.05) {
+					dy = -dy
+				}
+				dx = -dx
+				x = paddleX1 + paddleWidth + 0.01
+			}
+
+			// Check if the ball hits the paddle 2
+			if (
+				x + width > paddleX2 &&
+				x < paddleX2 + paddleWidth &&
+				y + height > paddleY2 &&
+				y < paddleY2 + paddleHeight
+			) {
+				if (y + height <= paddleY2 + 0.05 || y >= paddleY2 + paddleHeight - 0.05) {
+					dy = -dy
+				}
+				dx = -dx
+				x = paddleX2 - width - 0.01
+			}
+
+			// Call render
+			window.requestAnimationFrame(render)
+		}
+
+		function drawRectangle(x, y, width, height, color) {
+			let x1 = x
+			let x2 = x + width
+			let y1 = y
+			let y2 = y + height
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+				x1, y1, x2, y1, x1, y2, x1, y2, x2, y1, x2, y2]),
+				gl.STATIC_DRAW)
+			gl.uniform4fv(colorLocation, color)
+			gl.drawArrays(gl.TRIANGLES, 0, 6)
+		}
+
+		function restart() {
+			x = 0
+			y = 0
+			dx = Math.random() > 0.5 ? (Math.random() * 0.002 + 0.015) : -(Math.random() * 0.002 + 0.015)
+			dy = Math.random() > 0.5 ? (Math.random() * 0.01 + 0.005) : -(Math.random() * 0.01 + 0.005)
+		}
+
+		function updatePoints() {
+			p1.textContent = points1
+			p2.textContent = points2
+		}
+	</script>
+</body>
+
+</html>
