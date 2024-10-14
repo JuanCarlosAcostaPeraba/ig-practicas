@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-<!-- STEP 1: Prepare the canvas -->
 
 <head>
 	<style>
@@ -69,6 +68,8 @@
         in vec3 vLightDirection;
 
 				uniform vec3 uLightZoom;
+				uniform vec3 uLightColor;
+				uniform vec4 uMaterialColor;
 
         void main(void) {
           //fragColor = uColor;
@@ -76,7 +77,7 @@
           // computing diffuse component
         vec3 N = normalize(vNormal);
         vec3 L = normalize(vLightDirection);
-        vec3 diffuseMaterial = vec3(0,1,0);
+        vec3 diffuseMaterial = normalize(uLightColor) * uLightZoom;
         float diffuse = max(dot(N, L), 0.0);
         vec4 Idif = vec4(diffuse*diffuseMaterial,1);
 
@@ -92,7 +93,7 @@
            Ispec = vec4(specular * specularMaterial, 1);
         }
         // computing ambient component
-        vec4 Iamb = vec4(0,0,0.4,1);
+        vec4 Iamb = normalize(uMaterialColor);
         // calculamos color final
         fragColor = Iamb + Idif + Ispec;
         fragColor = min(fragColor, vec4(1,1,1,1));
@@ -124,12 +125,15 @@
 
 		var lightPosition;
 		var lightZoom;
+		var lightColor;
+		var materialColor;
 
 		var settings = {
 			rotateX: 0.0,
 			rotateY: 0.0,
 			lightZoom: 1,
-			difColor: [0.0, 1.0, 0.0, 1.0],
+			difColor: [0.0, 255, 0.0],
+			materialColor: [10.0, 10.0, 100, 1],
 		};
 
 		var gui = new dat.GUI();
@@ -137,6 +141,7 @@
 		gui.add(settings, "rotateY", -20, 20);
 		gui.add(settings, "lightZoom", 0.5, 2.0);
 		gui.addColor(settings, 'difColor');
+		gui.addColor(settings, 'materialColor');
 
 		function glPushMatrix() {
 			const matrix = mat4.create();
@@ -230,6 +235,8 @@
 
 			lightPosition = gl.getUniformLocation(shaderProgram, "uLightPosition");
 			lightZoom = gl.getUniformLocation(shaderProgram, "uLightZoom");
+			lightColor = gl.getUniformLocation(shaderProgram, "uLightColor");
+			materialColor = gl.getUniformLocation(shaderProgram, "uMaterialColor");
 
 			modelMatrixLoc = gl.getUniformLocation(shaderProgram, "uModelMatrix");
 			viewMatrixLoc = gl.getUniformLocation(shaderProgram, "uViewMatrix");
@@ -288,6 +295,8 @@
 
 			gl.uniform4fv(lightPosition, [settings.rotateX, settings.rotateY, 1, 1.0]);
 			gl.uniform3fv(lightZoom, [settings.lightZoom, settings.lightZoom, settings.lightZoom]);
+			gl.uniform3fv(lightColor, settings.difColor);
+			gl.uniform4fv(materialColor, settings.materialColor);
 
 			// Unbind the buffer
 			gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -406,6 +415,8 @@
 			gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
 			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, arrayIFaces, gl.STATIC_DRAW);
 			// draw meshes
+			gl.uniform4fv(colorLocation, [0, 0, 0, 1]);
+			gl.uniform4fv(colorLocation, [1, 0, 0, 1]);
 			for (i = 0; i < n - 2; i++)
 				gl.drawElements(
 					gl.TRIANGLE_STRIP,
