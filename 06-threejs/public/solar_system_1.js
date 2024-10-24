@@ -37,7 +37,7 @@ function init() {
 		0.1,
 		1000
 	)
-	camera.position.set(0, 0, 50)
+	camera.position.set(0, -50, 30)
 
 	renderer = new THREE.WebGLRenderer()
 	renderer.setSize(window.innerWidth, window.innerHeight)
