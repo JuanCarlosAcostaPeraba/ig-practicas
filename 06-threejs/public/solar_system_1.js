@@ -53,7 +53,11 @@ function init() {
 	scene.add(grid)
 
 	// Crear Sol
-	Estrella(3.5, 0xffff00)
+	Estrella(
+		3.5,
+		0xffff00,
+		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/sunmap.jpg'
+	)
 
 	// Crear planetas
 	Planeta(0.3, 8.0, 1.6, 0xa8a8a8, 1.0, 1.0) // Mercurio
@@ -81,9 +85,12 @@ function init() {
 	})
 }
 
-function Estrella(rad, col) {
+function Estrella(rad, col, texture) {
 	let geometry = new THREE.SphereGeometry(rad, 32, 32)
-	let material = new THREE.MeshBasicMaterial({ color: col })
+	let material = new THREE.MeshBasicMaterial({
+		color: col,
+		map: new THREE.TextureLoader().load(texture),
+	})
 	estrella = new THREE.Mesh(geometry, material)
 	scene.add(estrella)
 }
