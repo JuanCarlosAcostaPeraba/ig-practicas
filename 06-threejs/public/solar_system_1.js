@@ -64,6 +64,8 @@ const TEXTURE = {
 		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/stars.jpg',
 	STARS_MILKY_WAY:
 		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/stars_milky_way.jpg',
+	HUMEA:
+		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/humea.jpg',
 }
 
 function simulateLoading() {
@@ -207,7 +209,9 @@ function init() {
 function Comet(init, vel) {
 	const radio = 0.2
 	let geom = new THREE.SphereGeometry(radio, 32, 32)
-	let mat = new THREE.MeshBasicMaterial({ color: '#f0f0f0' })
+	let mat = new THREE.MeshBasicMaterial({
+		map: new THREE.TextureLoader().load(TEXTURE.STARS),
+	})
 	let comet = new THREE.Mesh(geom, mat)
 	comet.position.copy(init)
 	comet.userData.vel = vel
@@ -259,6 +263,8 @@ function Star(rad, texture) {
 // Draw planet
 function Planet(radio, dist, vel, f1, f2, texture, ringsTexture) {
 	let geom = new THREE.SphereGeometry(radio, 32, 32)
+	// rotate the texture
+	geom.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI / 2))
 	let mat = new THREE.MeshBasicMaterial({
 		map: new THREE.TextureLoader().load(texture),
 	})
