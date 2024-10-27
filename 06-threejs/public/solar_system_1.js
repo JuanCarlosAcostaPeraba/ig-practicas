@@ -20,6 +20,21 @@ let modeValue = 0
 
 const cameraInitialPosition = new THREE.Vector3(0, -50, 30)
 
+const loadingBar = document.getElementById('loading-bar')
+const loadingText = document.getElementById('loading-text')
+
+// Mensajes de carga
+const loadingMessages = [
+	'Cargando el sistema solar...',
+	'Calculando la velocidad de la luz...',
+	'Ocurriendo el Big Bang...',
+	'Alineando los planetas...',
+	'Preparando el viaje espacial...',
+	'Sintiendo la gravedad...',
+	'Evitando agujeros negros...',
+	'Configurando órbitas...',
+]
+
 // Texture paths
 const TEXTURE = {
 	SUN: 'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/sun.jpg',
@@ -49,8 +64,32 @@ const TEXTURE = {
 		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/stars_milky_way.jpg',
 }
 
-init()
-animationLoop()
+function simulateLoading() {
+	let progress = 0
+	const duration = 10000
+	const intervalTime = duration / loadingMessages.length
+
+	const loadingInterval = setInterval(() => {
+		progress += 100 / loadingMessages.length
+		loadingBar.style.width = `${progress}%`
+
+		const messageIndex = Math.floor((progress / 150) * loadingMessages.length)
+		loadingText.textContent =
+			loadingMessages[messageIndex] || 'Cargando el sistema solar...'
+
+		if (progress >= 100) {
+			clearInterval(loadingInterval)
+			loadingText.textContent = '¡Listo para explorar el universo!'
+			setTimeout(() => {
+				document.getElementById('loading-container').style.display = 'none'
+				init()
+				animationLoop()
+			}, 1000)
+		}
+	}, intervalTime)
+}
+
+simulateLoading()
 
 function init() {
 	// Define camera
