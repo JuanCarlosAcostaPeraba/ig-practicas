@@ -74,13 +74,12 @@ function loadTextures() {
 }
 
 loadTextures().then(() => {
-	// Una vez que todas las texturas están cargadas, inicia la escena
 	init()
 	animationLoop()
 
-	// Oculta la pantalla de carga
 	document.getElementById('loading').style.display = 'none'
 })
+
 function init() {
 	info = document.createElement('div')
 	info.style.position = 'absolute'
