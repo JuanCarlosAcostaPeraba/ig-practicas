@@ -138,7 +138,7 @@ function init() {
 	Planet(0.7, 14.9, 1.0, 1.0, 1.0, TEXTURE.EARTH) // Earth
 	Planet(0.35, 22.7, 0.8, 1.0, 1.0, TEXTURE.MARS) // Mars
 	Planet(1.5, 78.3, 0.4, 1.0, 1.0, TEXTURE.JUPITER) // Jupiter
-	Planet(1.2, 143.0, 0.3, 1.0, 1.0, TEXTURE.SATURN) // Saturn
+	Planet(1.2, 143.0, 0.3, 1.0, 1.0, TEXTURE.SATURN, TEXTURE.SATURN_RING_ALPHA) // Saturn
 	Planet(1.0, 287.0, 0.2, 1.0, 1.0, TEXTURE.URANUS) // Uranus
 	Planet(0.9, 450.0, 0.1, 1.0, 1.0, TEXTURE.NEPTUNE) // Neptune
 	Planet(0.3, 590.0, 0.05, 1.0, 1.0, TEXTURE.PLUTO) // Pluto
@@ -257,7 +257,7 @@ function Star(rad, texture) {
 }
 
 // Draw planet
-function Planet(radio, dist, vel, f1, f2, texture) {
+function Planet(radio, dist, vel, f1, f2, texture, ringsTexture) {
 	let geom = new THREE.SphereGeometry(radio, 32, 32)
 	let mat = new THREE.MeshBasicMaterial({
 		map: new THREE.TextureLoader().load(texture),
@@ -270,6 +270,20 @@ function Planet(radio, dist, vel, f1, f2, texture) {
 
 	Planets.push(planet)
 	scene.add(planet)
+
+	if (ringsTexture) {
+		const ringGeometry = new THREE.RingGeometry(radio * 1.5, radio * 2.5, 64)
+		const ringMaterial = new THREE.MeshBasicMaterial({
+			map: new THREE.TextureLoader().load(ringsTexture),
+			side: THREE.DoubleSide,
+			transparent: true,
+		})
+
+		const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial)
+
+		ringMesh.rotation.x = Math.PI / 2
+		planet.add(ringMesh)
+	}
 
 	// Draw orbit
 	let curve = new THREE.EllipseCurve(0, 0, dist * f1, dist * f2)
@@ -288,13 +302,13 @@ function Moon(planet, radio, dist, vel, col, angle, texture) {
 
 	let geom = new THREE.SphereGeometry(radio, 32, 32)
 	let mat
-	if (texture === undefined) {
+	if (texture) {
 		mat = new THREE.MeshBasicMaterial({
-			color: col,
+			map: new THREE.TextureLoader().load(texture),
 		})
 	} else {
 		mat = new THREE.MeshBasicMaterial({
-			map: new THREE.TextureLoader().load(texture),
+			color: col,
 		})
 	}
 	let luna = new THREE.Mesh(geom, mat)
