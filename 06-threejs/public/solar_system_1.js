@@ -14,7 +14,6 @@ let accglobal = 0.001
 let timestamp
 
 // Texture paths
-const loadedTextures = {}
 const TEXTURE = {
 	SUN: 'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/sun.jpg',
 	MERCURY:
@@ -28,7 +27,7 @@ const TEXTURE = {
 		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/jupiter.jpg',
 	SATURN:
 		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/saturn.jpg',
-	SATURN_RING_ALPHA:
+	SATRUN_RING_ALPHA:
 		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/saturn_ring_alpha.png',
 	URANUS:
 		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/uranus.jpg',
@@ -43,42 +42,8 @@ const TEXTURE = {
 		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/stars_milky_way.jpg',
 }
 
-function loadTextures() {
-	const texturesToLoad = [
-		{ name: 'SUN', url: TEXTURE.SUN },
-		{ name: 'MERCURY', url: TEXTURE.MERCURY },
-		{ name: 'VENUS', url: TEXTURE.VENUS },
-		{ name: 'EARTH', url: TEXTURE.EARTH },
-		{ name: 'MARS', url: TEXTURE.MARS },
-		{ name: 'JUPITER', url: TEXTURE.JUPITER },
-		{ name: 'SATURN', url: TEXTURE.SATURN },
-		{ name: 'SATURN_RING_ALPHA', url: TEXTURE.SATURN_RING_ALPHA },
-		{ name: 'URANUS', url: TEXTURE.URANUS },
-		{ name: 'NEPTUNE', url: TEXTURE.NEPTUNE },
-		{ name: 'PLUTO', url: TEXTURE.PLUTO },
-		{ name: 'MOON', url: TEXTURE.MOON },
-		{ name: 'STARS', url: TEXTURE.STARS },
-		{ name: 'STARS_MILKY_WAY', url: TEXTURE.STARS_MILKY_WAY },
-	]
-
-	return Promise.all(
-		texturesToLoad.map((texture) => {
-			return new Promise((resolve) => {
-				new THREE.TextureLoader().load(texture.url, (loadedTexture) => {
-					loadedTextures[texture.name] = loadedTexture
-					resolve()
-				})
-			})
-		})
-	)
-}
-
-loadTextures().then(() => {
-	init()
-	animationLoop()
-
-	document.getElementById('loading').style.display = 'none'
-})
+init()
+animationLoop()
 
 function init() {
 	info = document.createElement('div')
