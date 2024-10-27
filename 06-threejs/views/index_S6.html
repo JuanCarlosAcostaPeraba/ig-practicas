@@ -8,6 +8,7 @@
   <meta charset="utf-8">
   <title>Solar System on ThreeJS - JCAP</title>
   <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/solarsystem.ico" type="image/x-icon" />
   <style>
     body {
       margin: 0;
@@ -18,19 +19,25 @@
     #onoff {
       z-index: 12345;
       position: absolute;
-      margin-left: 0%;
+      margin-left: 0px;
     }
 
     #reset {
       z-index: 12345;
       position: absolute;
-      margin-left: 10%;
+      margin-left: 120px;
     }
 
     #switch {
       z-index: 12345;
       position: absolute;
-      margin-left: 20%;
+      margin-left: 290px;
+    }
+
+    #stop {
+      z-index: 12345;
+      position: absolute;
+      margin-top: 50px;
     }
 
     a {
@@ -91,6 +98,7 @@
   <button type="button" id="onoff">Rejilla <span id="off">off</span></button>
   <button type="button" id="reset">Resetear vista</button>
   <button type="button" id="switch">Modo <span id="mode">moverse</span></button>
+  <button type="button" id="stop">Parar tiempo</button>
 
   <a href="https://github.com/JuanCarlosAcostaPeraba/ig-practicas/tree/main/06-threejs" target="_blank">
     <svg viewBox="0 0 256 250" width="256" height="250" fill="#fff" xmlns="http://www.w3.org/2000/svg"
