@@ -15,6 +15,8 @@ let t0 = 0
 let accglobal = 0.001
 let timestamp
 
+let pause = 0
+
 let modeValue = 0
 const mode = document.getElementById('mode')
 const gridState = document.getElementById('off')
@@ -182,6 +184,18 @@ function init() {
 		}
 	})
 
+	// Pause / Resume
+	document.getElementById('pause').addEventListener('click', (event) => {
+		event.preventDefault()
+		if (pause === 0) {
+			pause = 1
+			document.getElementById('pause').innerHTML = 'Reanudar'
+		} else {
+			pause = 0
+			document.getElementById('pause').innerHTML = 'Pausar'
+		}
+	})
+
 	// Resize event
 	window.addEventListener('resize', () => {
 		camera.aspect = window.innerWidth / window.innerHeight
@@ -297,40 +311,42 @@ function animationLoop() {
 
 	requestAnimationFrame(animationLoop)
 
-	// Move planets in their orbits
-	for (let object of Planets) {
-		object.position.x =
-			Math.cos(timestamp * object.userData.speed) *
-			object.userData.f1 *
-			object.userData.dist
-		object.position.y =
-			Math.sin(timestamp * object.userData.speed) *
-			object.userData.f2 *
-			object.userData.dist
-	}
-
-	// Move moons in their orbits
-	for (let object of Moons) {
-		object.position.x =
-			Math.cos(timestamp * object.userData.speed) * object.userData.dist
-		object.position.y =
-			Math.sin(timestamp * object.userData.speed) * object.userData.dist
-	}
-
-	// Actualizar la posición de todos los cometas
-	comets.forEach((comet, index) => {
-		comet.position.add(comet.userData.vel)
-
-		// Actualizar la trayectoria del cometa
-		cometsPath[index].push(comet.position.clone())
-		if (cometsPath[index].length > 50) {
-			cometsPath[index].shift()
+	if (!pause) {
+		// Move planets in their orbits
+		for (let object of Planets) {
+			object.position.x =
+				Math.cos(timestamp * object.userData.speed) *
+				object.userData.f1 *
+				object.userData.dist
+			object.position.y =
+				Math.sin(timestamp * object.userData.speed) *
+				object.userData.f2 *
+				object.userData.dist
 		}
 
-		// Actualizar la geometría de la estela
-		const pathGeometry = comet.userData.trail.geometry
-		pathGeometry.setFromPoints(cometsPath[index])
-	})
+		// Move moons in their orbits
+		for (let object of Moons) {
+			object.position.x =
+				Math.cos(timestamp * object.userData.speed) * object.userData.dist
+			object.position.y =
+				Math.sin(timestamp * object.userData.speed) * object.userData.dist
+		}
+
+		// Actualizar la posición de todos los cometas
+		comets.forEach((comet, index) => {
+			comet.position.add(comet.userData.vel)
+
+			// Actualizar la trayectoria del cometa
+			cometsPath[index].push(comet.position.clone())
+			if (cometsPath[index].length > 50) {
+				cometsPath[index].shift()
+			}
+
+			// Actualizar la geometría de la estela
+			const pathGeometry = comet.userData.trail.geometry
+			pathGeometry.setFromPoints(cometsPath[index])
+		})
+	}
 
 	renderer.render(scene, camera)
 }
