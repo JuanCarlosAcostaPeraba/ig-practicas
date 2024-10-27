@@ -15,6 +15,12 @@
       margin-left: 0%;
     }
 
+    #reset {
+      z-index: 12345;
+      position: absolute;
+      margin-left: 10%;
+    }
+
     a {
       position: absolute;
       bottom: 0;
@@ -29,15 +35,16 @@
 
 <body>
   <script type="importmap">
-      {
-        "imports": {
-          "three": "https://unpkg.com/three@0.152.1/build/three.module.js",  
-          "three/": "https://cdn.skypack.dev/three@0.152.1/"
-        }
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.152.1/build/three.module.js",  
+        "three/": "https://cdn.skypack.dev/three@0.152.1/"
       }
-    </script>
+    }
+  </script>
 
   <button type="button" id="onoff">Rejilla on/off</button>
+  <button type="button" id="reset">Resetear vista</button>
 
   <a href="https://github.com/JuanCarlosAcostaPeraba/ig-practicas/tree/main/06-threejs" target="_blank">
     <svg viewBox="0 0 256 250" width="256" height="250" fill="#fff" xmlns="http://www.w3.org/2000/svg"

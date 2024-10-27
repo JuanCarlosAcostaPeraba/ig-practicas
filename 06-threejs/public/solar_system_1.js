@@ -13,6 +13,8 @@ let t0 = 0
 let accglobal = 0.001
 let timestamp
 
+const cameraInitialPosition = new THREE.Vector3(0, -50, 30)
+
 // Texture paths
 const TEXTURE = {
 	SUN: 'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/sun.jpg',
@@ -65,9 +67,9 @@ function init() {
 		75,
 		window.innerWidth / window.innerHeight,
 		0.1,
-		1000
+		3000
 	)
-	camera.position.set(0, -50, 30)
+	camera.position.copy(cameraInitialPosition)
 
 	renderer = new THREE.WebGLRenderer()
 	renderer.setSize(window.innerWidth, window.innerHeight)
@@ -76,7 +78,7 @@ function init() {
 	let camcontrols = new OrbitControls(camera, renderer.domElement)
 
 	// Grid
-	grid = new THREE.GridHelper(900, 100)
+	grid = new THREE.GridHelper(2000, 100)
 	grid.geometry.rotateX(Math.PI / 2)
 	grid.position.set(0, 0, 0.05)
 	grid.visible = false
@@ -110,6 +112,78 @@ function init() {
 	document.getElementById('onoff').addEventListener('click', function () {
 		grid.visible = !grid.visible
 	})
+
+	// Escuchar el clic del mouse
+	window.addEventListener('click', onMouseClick, false)
+
+	// Escuchar el clic en el botón de reset
+	document.getElementById('reset').addEventListener('click', resetCamera, false)
+
+	// Resize event
+	window.addEventListener('resize', () => {
+		camera.aspect = window.innerWidth / window.innerHeight
+		camera.updateProjectionMatrix()
+		renderer.setSize(window.innerWidth, window.innerHeight)
+	})
+}
+
+function resetCamera() {
+	camera.position.copy(cameraInitialPosition)
+	camera.lookAt(0, 0, 0)
+}
+
+// Crear cometa
+function crearCometa(x, y, z) {
+	const cometaGeom = new THREE.SphereGeometry(0.2, 16, 16) // Núcleo del cometa
+	const cometaMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff })
+	const cometa = new THREE.Mesh(cometaGeom, cometaMaterial)
+
+	// Posición inicial del cometa
+	cometa.position.set(x, y, z)
+	scene.add(cometa)
+
+	// Crear cola del cometa
+	const colaMaterial = new THREE.LineBasicMaterial({
+		color: 0xaaaaaa,
+		transparent: true,
+		opacity: 0.5,
+	})
+	const colaGeom = new THREE.BufferGeometry().setFromPoints([
+		new THREE.Vector3(0, 0, 0),
+		new THREE.Vector3(-2, -2, -2),
+	])
+	const cola = new THREE.Line(colaGeom, colaMaterial)
+	cometa.add(cola)
+
+	// Generar una dirección aleatoria para el movimiento
+	const direccion = new THREE.Vector3(
+		Math.random() * 0.1 - 0.05,
+		Math.random() * 0.1 - 0.05,
+		Math.random() * 0.1 - 0.05
+	)
+
+	// Animación para mover el cometa
+	function moverCometa() {
+		cometa.position.add(direccion)
+		requestAnimationFrame(moverCometa)
+	}
+	moverCometa()
+}
+
+// Manejo de clic del mouse
+function onMouseClick(event) {
+	const mouse = new THREE.Vector2()
+	mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+
+	const raycaster = new THREE.Raycaster()
+	raycaster.setFromCamera(mouse, camera)
+	const intersects = raycaster.intersectObjects(scene.children, true)
+
+	if (intersects.length > 0) {
+		const { x, y, z } = intersects[0].point
+		crearCometa(x, y, z)
+	}
 }
 
 function Star(rad, texture) {
