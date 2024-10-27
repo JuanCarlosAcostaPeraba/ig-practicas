@@ -341,7 +341,11 @@ function animationLoop() {
 				object.userData.f2 *
 				object.userData.dist
 
-			object.rotation.z += object.userData.rotationSpeed
+			if (object === Planets[2]) {
+				object.rotation.z += object.userData.rotationSpeed
+			} else {
+				object.rotation.y += object.userData.rotationSpeed
+			}
 		}
 
 		for (let object of Moons) {
