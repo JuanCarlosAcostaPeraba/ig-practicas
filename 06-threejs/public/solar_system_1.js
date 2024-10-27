@@ -64,8 +64,8 @@ const TEXTURE = {
 		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/stars.jpg',
 	STARS_MILKY_WAY:
 		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/stars_milky_way.jpg',
-	HUMEA:
-		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/humea.jpg',
+	HAUMEA:
+		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/haumea.jpg',
 }
 
 function simulateLoading() {
@@ -193,7 +193,7 @@ function init() {
 			document.getElementById('pause').innerHTML = 'Reanudar'
 		} else {
 			pause = 0
-			document.getElementById('pause').innerHTML = 'Pausar'
+			document.getElementById('pause').innerHTML = 'Pausar tiempo'
 		}
 	})
 
@@ -210,7 +210,7 @@ function Comet(init, vel) {
 	const radio = 0.2
 	let geom = new THREE.SphereGeometry(radio, 32, 32)
 	let mat = new THREE.MeshBasicMaterial({
-		map: new THREE.TextureLoader().load(TEXTURE.STARS),
+		map: new THREE.TextureLoader().load(TEXTURE.HAUMEA),
 	})
 	let comet = new THREE.Mesh(geom, mat)
 	comet.position.copy(init)
