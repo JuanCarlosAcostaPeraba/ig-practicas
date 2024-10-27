@@ -60,8 +60,6 @@ const TEXTURE = {
 	PLUTO:
 		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/pluto.jpg',
 	MOON: 'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/moon.jpg',
-	STARS:
-		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/stars.jpg',
 	STARS_MILKY_WAY:
 		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/stars_milky_way.jpg',
 	HAUMEA:
