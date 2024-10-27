@@ -26,7 +26,6 @@ const cameraInitialPosition = new THREE.Vector3(0, -50, 30)
 const loadingBar = document.getElementById('loading-bar')
 const loadingText = document.getElementById('loading-text')
 
-// Mensajes de carga
 const loadingMessages = [
 	'Cargando el sistema solar...',
 	'Calculando la velocidad de la luz...',
@@ -52,7 +51,7 @@ const TEXTURE = {
 		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/jupiter.jpg',
 	SATURN:
 		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/saturn.jpg',
-	SATRUN_RING_ALPHA:
+	SATURN_RING_ALPHA:
 		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/saturn_ring_alpha.png',
 	URANUS:
 		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/uranus.jpg',
@@ -114,11 +113,11 @@ function init() {
 	const textureLoader = new THREE.TextureLoader()
 	const starTexture = textureLoader.load(TEXTURE.STARS_MILKY_WAY)
 
-	// Crear la esfera invertida para el fondo
+	// Create star background (milky way)
 	const sphereGeometry = new THREE.SphereGeometry(1000, 60, 40)
 	const sphereMaterial = new THREE.MeshBasicMaterial({
 		map: starTexture,
-		side: THREE.BackSide, // Renderiza desde adentro
+		side: THREE.BackSide,
 	})
 	const starBackground = new THREE.Mesh(sphereGeometry, sphereMaterial)
 	scene.add(starBackground)
@@ -332,17 +331,17 @@ function animationLoop() {
 				Math.sin(timestamp * object.userData.speed) * object.userData.dist
 		}
 
-		// Actualizar la posición de todos los cometas
+		// Update comets position
 		comets.forEach((comet, index) => {
 			comet.position.add(comet.userData.vel)
 
-			// Actualizar la trayectoria del cometa
+			// Update comet path
 			cometsPath[index].push(comet.position.clone())
 			if (cometsPath[index].length > 50) {
 				cometsPath[index].shift()
 			}
 
-			// Actualizar la geometría de la estela
+			// Update comet trail
 			const pathGeometry = comet.userData.trail.geometry
 			pathGeometry.setFromPoints(cometsPath[index])
 		})
