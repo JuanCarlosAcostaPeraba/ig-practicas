@@ -15,8 +15,9 @@ let t0 = 0
 let accglobal = 0.001
 let timestamp
 
-const mode = document.getElementById('mode')
 let modeValue = 0
+const mode = document.getElementById('mode')
+const gridState = document.getElementById('off')
 
 const cameraInitialPosition = new THREE.Vector3(0, -50, 30)
 
@@ -108,6 +109,18 @@ function init() {
 
 	let camcontrols = new OrbitControls(camera, renderer.domElement)
 
+	const textureLoader = new THREE.TextureLoader()
+	const starTexture = textureLoader.load(TEXTURE.STARS_MILKY_WAY)
+
+	// Crear la esfera invertida para el fondo
+	const sphereGeometry = new THREE.SphereGeometry(1000, 60, 40)
+	const sphereMaterial = new THREE.MeshBasicMaterial({
+		map: starTexture,
+		side: THREE.BackSide, // Renderiza desde adentro
+	})
+	const starBackground = new THREE.Mesh(sphereGeometry, sphereMaterial)
+	scene.add(starBackground)
+
 	// Grid
 	grid = new THREE.GridHelper(2000, 100)
 	grid.geometry.rotateX(Math.PI / 2)
@@ -143,6 +156,7 @@ function init() {
 	document.getElementById('onoff').addEventListener('click', (event) => {
 		event.preventDefault()
 		grid.visible = !grid.visible
+		gridState.innerHTML = grid.visible ? 'on' : 'off'
 	})
 
 	// Reset camera
@@ -157,12 +171,12 @@ function init() {
 		event.preventDefault()
 		if (modeValue === 0) {
 			modeValue = 1
-			mode.innerHTML = 'Añadir cometas'
+			mode.innerHTML = 'añadir cometas'
 			document.addEventListener('click', onMouseClick)
 			camcontrols.enabled = false
 		} else {
 			modeValue = 0
-			mode.innerHTML = 'Mover'
+			mode.innerHTML = 'moverse'
 			document.removeEventListener('click', onMouseClick)
 			camcontrols.enabled = true
 		}
