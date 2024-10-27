@@ -39,31 +39,31 @@ const loadingMessages = [
 
 // Texture paths
 const TEXTURE = {
-	SUN: 'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/sun.jpg',
+	SUN: 'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/sun.jpg?v=1730055099088',
 	MERCURY:
-		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/mercury.jpg',
+		'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/mercury.jpg?v=1730055063046',
 	VENUS:
-		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/venus.jpg',
+		'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/venus.jpg?v=1730055107616',
 	EARTH:
-		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/earth.jpg',
-	MARS: 'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/mars.jpg',
+		'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/earth.jpg?v=1730054954000',
+	MARS: 'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/mars.jpg?v=1730055060393',
 	JUPITER:
-		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/jupiter.jpg',
+		'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/jupiter.jpg?v=1730055049178',
 	SATURN:
-		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/saturn.jpg',
+		'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/saturn.jpg?v=1730055081393',
 	SATURN_RING_ALPHA:
-		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/saturn_ring_alpha.png',
+		'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/saturn_ring_alpha.png?v=1730055077452',
 	URANUS:
-		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/uranus.jpg',
+		'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/uranus.jpg?v=1730055101737',
 	NEPTUNE:
-		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/neptune.jpg',
+		'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/neptune.jpg?v=1730055070937',
 	PLUTO:
-		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/pluto.jpg',
-	MOON: 'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/moon.jpg',
+		'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/pluto.jpg?v=1730055074588',
+	MOON: 'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/moon.jpg?v=1730055069037',
 	STARS_MILKY_WAY:
-		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/stars_milky_way.jpg',
+		'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/stars_milky_way.jpg?v=1730055092687',
 	HAUMEA:
-		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/haumea.jpg',
+		'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/haumea.jpg?v=1730055042116',
 }
 
 function simulateLoading() {
