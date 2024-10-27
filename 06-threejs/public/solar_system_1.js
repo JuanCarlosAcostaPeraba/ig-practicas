@@ -13,6 +13,9 @@ let t0 = 0
 let accglobal = 0.001
 let timestamp
 
+const mode = document.getElementById('mode')
+let modeValue = 0
+
 const cameraInitialPosition = new THREE.Vector3(0, -50, 30)
 
 // Texture paths
@@ -48,19 +51,6 @@ init()
 animationLoop()
 
 function init() {
-	info = document.createElement('div')
-	info.style.position = 'absolute'
-	info.style.top = '30px'
-	info.style.width = '100%'
-	info.style.textAlign = 'center'
-	info.style.color = '#fff'
-	info.style.fontWeight = 'bold'
-	info.style.backgroundColor = 'transparent'
-	info.style.zIndex = '1'
-	info.style.fontFamily = 'Monospace'
-	info.innerHTML = 'three.js - Sistema Solar'
-	document.body.appendChild(info)
-
 	// Define camera
 	scene = new THREE.Scene()
 	camera = new THREE.PerspectiveCamera(
@@ -113,11 +103,21 @@ function init() {
 		grid.visible = !grid.visible
 	})
 
-	// Escuchar el clic del mouse
-	window.addEventListener('click', onMouseClick, false)
-
-	// Escuchar el clic en el botón de reset
+	// Reset camera
 	document.getElementById('reset').addEventListener('click', resetCamera, false)
+
+	// Switch mode (move / add comets)
+	document.getElementById('switch').addEventListener('click', function () {
+		if (modeValue === 0) {
+			modeValue = 1
+			mode.innerHTML = 'Añadir cometas'
+			window.addEventListener('click', onMouseClick)
+		} else {
+			modeValue = 0
+			mode.innerHTML = 'Mover'
+			window.removeEventListener('click', onMouseClick)
+		}
+	})
 
 	// Resize event
 	window.addEventListener('resize', () => {
@@ -127,12 +127,13 @@ function init() {
 	})
 }
 
+// Reset camera
 function resetCamera() {
 	camera.position.copy(cameraInitialPosition)
 	camera.lookAt(0, 0, 0)
 }
 
-// Crear cometa
+// Create a comet
 function crearCometa(x, y, z) {
 	const cometaGeom = new THREE.SphereGeometry(0.2, 16, 16) // Núcleo del cometa
 	const cometaMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff })
@@ -142,18 +143,24 @@ function crearCometa(x, y, z) {
 	cometa.position.set(x, y, z)
 	scene.add(cometa)
 
-	// Crear cola del cometa
-	const colaMaterial = new THREE.LineBasicMaterial({
+	// Crear cola del cometa usando un BufferGeometry
+	const colaMaterial = new THREE.PointsMaterial({
 		color: 0xaaaaaa,
+		size: 0.3,
 		transparent: true,
 		opacity: 0.5,
 	})
-	const colaGeom = new THREE.BufferGeometry().setFromPoints([
-		new THREE.Vector3(0, 0, 0),
-		new THREE.Vector3(-2, -2, -2),
-	])
-	const cola = new THREE.Line(colaGeom, colaMaterial)
+
+	const colaGeom = new THREE.BufferGeometry()
+	const positions = new Float32Array(100 * 3) // 100 partículas en la cola
+	colaGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+	const cola = new THREE.Points(colaGeom, colaMaterial)
 	cometa.add(cola)
+
+	// Variables para controlar la cola
+	const colaLength = 100 // Longitud de la cola
+	let colaIndex = 0 // Índice actual de la cola
+	const colaPositions = new Float32Array(colaLength * 3) // Almacenar las posiciones de la cola
 
 	// Generar una dirección aleatoria para el movimiento
 	const direccion = new THREE.Vector3(
@@ -162,9 +169,23 @@ function crearCometa(x, y, z) {
 		Math.random() * 0.1 - 0.05
 	)
 
-	// Animación para mover el cometa
+	// Animación para mover el cometa y actualizar la cola
 	function moverCometa() {
+		// Mover el cometa
 		cometa.position.add(direccion)
+
+		// Actualizar la posición de la cola
+		colaPositions[colaIndex * 3] = cometa.position.x // x
+		colaPositions[colaIndex * 3 + 1] = cometa.position.y // y
+		colaPositions[colaIndex * 3 + 2] = cometa.position.z // z
+
+		colaIndex = (colaIndex + 1) % colaLength // Actualizar índice de cola
+		cola.geometry.attributes.position.needsUpdate = true // Marcar como actualizado
+		cola.geometry.setAttribute(
+			'position',
+			new THREE.BufferAttribute(colaPositions, 3)
+		)
+
 		requestAnimationFrame(moverCometa)
 	}
 	moverCometa()
