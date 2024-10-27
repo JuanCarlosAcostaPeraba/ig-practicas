@@ -12,6 +12,35 @@ let t0 = 0
 let accglobal = 0.001
 let timestamp
 
+const TEXTURE = {
+	SUN: 'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/sun.jpg',
+	MERCURY:
+		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/mercury.jpg',
+	VENUS:
+		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/venus.jpg',
+	EARTH:
+		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/earth.jpg',
+	MARS: 'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/mars.jpg',
+	JUPITER:
+		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/jupiter.jpg',
+	SATURN:
+		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/saturn.jpg',
+	URANUS:
+		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/uranus.jpg',
+	NEPTUNE:
+		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/neptune.jpg',
+	PLUTO:
+		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/pluto.jpg',
+	MOON: 'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/moon.jpg',
+	IO: 'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/io.jpg',
+	EUROPA:
+		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/europa.jpg',
+	GANIMEDES:
+		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/ganimedes.jpg',
+	TITAN:
+		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/titan.jpg',
+}
+
 init()
 animationLoop()
 
@@ -53,11 +82,7 @@ function init() {
 	scene.add(grid)
 
 	// Crear Sol
-	Estrella(
-		3.5,
-		0xffff00,
-		'https://raw.githubusercontent.com/JuanCarlosAcostaPeraba/ig-practicas/refs/heads/main/06-threejs/assets/sunmap.jpg'
-	)
+	Estrella(3.5, 0xffff00, TEXTURE.SUN)
 
 	// Crear planetas
 	Planeta(0.3, 8.0, 1.6, 0xa8a8a8, 1.0, 1.0) // Mercurio
