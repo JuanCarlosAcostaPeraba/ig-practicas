@@ -1,11 +1,14 @@
-# Primeros pasos con Three.js
+# Sistema Solar 01
 
-## Introducción
+## Funcionalidades Implementadas
 
-[Three.js](https://threejs.org/) es una biblioteca de JavaScript que ofrece un gran repertorio de posibilidades para gráficos 3D en el navegador, que hace uso de WebGL. Cuenta
-con nutrida documentación y una comunidad activa, por lo que la hemos escogido para las prácticas de las próximas semanas en la asignatura.
-
-Más información en la [web de la asignatura](https://github.com/otsedom/otsedom.github.io/blob/main/IG/README.md).
-
-----------------------------
-Note: Node app files structure for threejs adopted from <https://glitch.com/~threejs-template-apcs236> by [Gomix](https://gomix.com/about)
+- Modelado del Sol, planetas y lunas.
+- Texturizado del Sol, planetas y lunas.
+- Movimiento orbital de los planetas alrededor del Sol.
+- Control de cámara para explorar el sistema solar.
+- Zoom in y zoom out para observar detalles de los planetas.
+- Pantalla de carga al inicio de la aplicación.
+- Botón para entrar en modo creación de cometas al hacer click. Se desactiva la opción de zoom y movimiento de cámara.
+- Botón para resetear la cámara y volver al sistema solar.
+- Botón para activar la rejilla del plano.
+- Botón para parar el movimiento de los planetas.
