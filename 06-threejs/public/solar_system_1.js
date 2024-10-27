@@ -271,6 +271,7 @@ function Planet(radio, dist, vel, f1, f2, texture, ringsTexture) {
 	planet.userData.speed = vel
 	planet.userData.f1 = f1
 	planet.userData.f2 = f2
+	planet.userData.rotationSpeed = 0.02
 
 	Planets.push(planet)
 	scene.add(planet)
@@ -318,6 +319,7 @@ function Moon(planet, radio, dist, vel, col, angle, texture) {
 	let luna = new THREE.Mesh(geom, mat)
 	luna.userData.dist = dist
 	luna.userData.speed = vel
+	luna.userData.rotationSpeed = 0.02
 
 	Moons.push(luna)
 	pivote.add(luna)
@@ -329,7 +331,6 @@ function animationLoop() {
 	requestAnimationFrame(animationLoop)
 
 	if (!pause) {
-		// Move planets in their orbits
 		for (let object of Planets) {
 			object.position.x =
 				Math.cos(timestamp * object.userData.speed) *
@@ -339,27 +340,27 @@ function animationLoop() {
 				Math.sin(timestamp * object.userData.speed) *
 				object.userData.f2 *
 				object.userData.dist
+
+			object.rotation.z += object.userData.rotationSpeed
 		}
 
-		// Move moons in their orbits
 		for (let object of Moons) {
 			object.position.x =
 				Math.cos(timestamp * object.userData.speed) * object.userData.dist
 			object.position.y =
 				Math.sin(timestamp * object.userData.speed) * object.userData.dist
+
+			object.rotation.y += object.userData.rotationSpeed
 		}
 
-		// Update comets position
 		comets.forEach((comet, index) => {
 			comet.position.add(comet.userData.vel)
 
-			// Update comet path
 			cometsPath[index].push(comet.position.clone())
 			if (cometsPath[index].length > 50) {
 				cometsPath[index].shift()
 			}
 
-			// Update comet trail
 			const pathGeometry = comet.userData.trail.geometry
 			pathGeometry.setFromPoints(cometsPath[index])
 		})
