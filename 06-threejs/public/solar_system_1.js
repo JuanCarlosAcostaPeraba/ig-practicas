@@ -8,7 +8,9 @@ let info
 let grid
 let star,
 	Planets = [],
-	Lunas = []
+	Moons = []
+let comets = []
+let cometsPath = []
 let t0 = 0
 let accglobal = 0.001
 let timestamp
@@ -57,7 +59,7 @@ function init() {
 		75,
 		window.innerWidth / window.innerHeight,
 		0.1,
-		3000
+		1500
 	)
 	camera.position.copy(cameraInitialPosition)
 
@@ -99,23 +101,31 @@ function init() {
 	t0 = Date.now()
 
 	// Show/hide grid
-	document.getElementById('onoff').addEventListener('click', function () {
+	document.getElementById('onoff').addEventListener('click', (event) => {
+		event.preventDefault()
 		grid.visible = !grid.visible
 	})
 
 	// Reset camera
-	document.getElementById('reset').addEventListener('click', resetCamera, false)
+	document.getElementById('reset').addEventListener('click', (event) => {
+		event.preventDefault()
+		camera.position.copy(cameraInitialPosition)
+		camera.lookAt(0, 0, 0)
+	})
 
 	// Switch mode (move / add comets)
-	document.getElementById('switch').addEventListener('click', function () {
+	document.getElementById('switch').addEventListener('click', (event) => {
+		event.preventDefault()
 		if (modeValue === 0) {
 			modeValue = 1
 			mode.innerHTML = 'Añadir cometas'
-			window.addEventListener('click', onMouseClick)
+			document.addEventListener('click', onMouseClick)
+			camcontrols.enabled = false
 		} else {
 			modeValue = 0
 			mode.innerHTML = 'Mover'
-			window.removeEventListener('click', onMouseClick)
+			document.removeEventListener('click', onMouseClick)
+			camcontrols.enabled = true
 		}
 	})
 
@@ -127,86 +137,50 @@ function init() {
 	})
 }
 
-// Reset camera
-function resetCamera() {
-	camera.position.copy(cameraInitialPosition)
-	camera.lookAt(0, 0, 0)
-}
-
 // Create a comet
-function crearCometa(x, y, z) {
-	const cometaGeom = new THREE.SphereGeometry(0.2, 16, 16) // Núcleo del cometa
-	const cometaMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff })
-	const cometa = new THREE.Mesh(cometaGeom, cometaMaterial)
+function Comet(init, vel) {
+	const radio = 0.2
+	let geom = new THREE.SphereGeometry(radio, 32, 32)
+	let mat = new THREE.MeshBasicMaterial({ color: '#f0f0f0' })
+	let comet = new THREE.Mesh(geom, mat)
+	comet.position.copy(init)
+	comet.userData.vel = vel
 
-	// Posición inicial del cometa
-	cometa.position.set(x, y, z)
-	scene.add(cometa)
+	scene.add(comet)
+	comets.push(comet)
 
-	// Crear cola del cometa usando un BufferGeometry
-	const colaMaterial = new THREE.PointsMaterial({
-		color: 0xaaaaaa,
-		size: 0.3,
-		transparent: true,
-		opacity: 0.5,
-	})
+	cometsPath.push([comet.position.clone()])
 
-	const colaGeom = new THREE.BufferGeometry()
-	const positions = new Float32Array(100 * 3) // 100 partículas en la cola
-	colaGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-	const cola = new THREE.Points(colaGeom, colaMaterial)
-	cometa.add(cola)
-
-	// Variables para controlar la cola
-	const colaLength = 100 // Longitud de la cola
-	let colaIndex = 0 // Índice actual de la cola
-	const colaPositions = new Float32Array(colaLength * 3) // Almacenar las posiciones de la cola
-
-	// Generar una dirección aleatoria para el movimiento
-	const direccion = new THREE.Vector3(
-		Math.random() * 0.1 - 0.05,
-		Math.random() * 0.1 - 0.05,
-		Math.random() * 0.1 - 0.05
-	)
-
-	// Animación para mover el cometa y actualizar la cola
-	function moverCometa() {
-		// Mover el cometa
-		cometa.position.add(direccion)
-
-		// Actualizar la posición de la cola
-		colaPositions[colaIndex * 3] = cometa.position.x // x
-		colaPositions[colaIndex * 3 + 1] = cometa.position.y // y
-		colaPositions[colaIndex * 3 + 2] = cometa.position.z // z
-
-		colaIndex = (colaIndex + 1) % colaLength // Actualizar índice de cola
-		cola.geometry.attributes.position.needsUpdate = true // Marcar como actualizado
-		cola.geometry.setAttribute(
-			'position',
-			new THREE.BufferAttribute(colaPositions, 3)
-		)
-
-		requestAnimationFrame(moverCometa)
-	}
-	moverCometa()
+	const pathGeometry = new THREE.BufferGeometry()
+	const pathMaterial = new THREE.LineBasicMaterial({ color: 0xffffff })
+	const cometTrail = new THREE.Line(pathGeometry, pathMaterial)
+	scene.add(cometTrail)
+	comet.userData.trail = cometTrail
 }
 
-// Manejo de clic del mouse
+// Event to create comets
 function onMouseClick(event) {
 	const mouse = new THREE.Vector2()
-	mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+	mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1
+	mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1
 
 	const raycaster = new THREE.Raycaster()
 	raycaster.setFromCamera(mouse, camera)
-	const intersects = raycaster.intersectObjects(scene.children, true)
 
-	if (intersects.length > 0) {
-		const { x, y, z } = intersects[0].point
-		crearCometa(x, y, z)
-	}
+	const planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0)
+	const intersectPoint = new THREE.Vector3()
+	raycaster.ray.intersectPlane(planeZ, intersectPoint)
+
+	const randomVelocity = new THREE.Vector3(
+		(Math.random() - 0.5) * 0.1,
+		(Math.random() - 0.5) * 0.1,
+		(Math.random() - 0.5) * 0.1
+	)
+
+	Comet(intersectPoint, randomVelocity)
 }
 
+// Draw star
 function Star(rad, texture) {
 	let geometry = new THREE.SphereGeometry(rad, 32, 32)
 	let material = new THREE.MeshBasicMaterial({
@@ -216,6 +190,7 @@ function Star(rad, texture) {
 	scene.add(star)
 }
 
+// Draw planet
 function Planet(radio, dist, vel, f1, f2, texture) {
 	let geom = new THREE.SphereGeometry(radio, 32, 32)
 	let mat = new THREE.MeshBasicMaterial({
@@ -260,7 +235,7 @@ function Moon(planet, radio, dist, vel, col, angle, texture) {
 	luna.userData.dist = dist
 	luna.userData.speed = vel
 
-	Lunas.push(luna)
+	Moons.push(luna)
 	pivote.add(luna)
 }
 
@@ -269,7 +244,7 @@ function animationLoop() {
 
 	requestAnimationFrame(animationLoop)
 
-	// Mover planetas en sus órbitas
+	// Move planets in their orbits
 	for (let object of Planets) {
 		object.position.x =
 			Math.cos(timestamp * object.userData.speed) *
@@ -281,13 +256,28 @@ function animationLoop() {
 			object.userData.dist
 	}
 
-	// Mover lunas en sus órbitas
-	for (let object of Lunas) {
+	// Move moons in their orbits
+	for (let object of Moons) {
 		object.position.x =
 			Math.cos(timestamp * object.userData.speed) * object.userData.dist
 		object.position.y =
 			Math.sin(timestamp * object.userData.speed) * object.userData.dist
 	}
+
+	// Actualizar la posición de todos los cometas
+	comets.forEach((comet, index) => {
+		comet.position.add(comet.userData.vel)
+
+		// Actualizar la trayectoria del cometa
+		cometsPath[index].push(comet.position.clone())
+		if (cometsPath[index].length > 50) {
+			cometsPath[index].shift()
+		}
+
+		// Actualizar la geometría de la estela
+		const pathGeometry = comet.userData.trail.geometry
+		pathGeometry.setFromPoints(cometsPath[index])
+	})
 
 	renderer.render(scene, camera)
 }
