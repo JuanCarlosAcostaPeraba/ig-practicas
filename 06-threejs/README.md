@@ -5,6 +5,7 @@
 - Modelado del Sol, planetas y lunas.
 - Texturizado del Sol, planetas y lunas.
 - Movimiento orbital de los planetas alrededor del Sol.
+- Movimiento de rotación de los planetas sobre su propio eje.
 - Control de cámara para explorar el sistema solar.
 - Zoom in y zoom out para observar detalles de los planetas.
 - Pantalla de carga al inicio de la aplicación.
