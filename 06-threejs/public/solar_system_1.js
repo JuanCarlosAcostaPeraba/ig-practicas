@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js'
 
 // Global variables
 let scene, renderer
@@ -139,6 +140,38 @@ function init() {
 
 	let camcontrols = new OrbitControls(camera, renderer.domElement)
 
+	// Inicializar lil-gui
+	const gui = new GUI()
+	const guiControls = {
+		toggleGrid: () => {
+			grid.visible = !grid.visible
+		},
+		resetView: () => {
+			camera.position.set(0, -50, 30)
+			camera.lookAt(0, 0, 0)
+		},
+		toggleMode: () => {
+			modeValue = modeValue === 0 ? 1 : 0
+			if (modeValue === 0) {
+				modeValue = 1
+				document.addEventListener('click', onMouseClick)
+				camcontrols.enabled = false
+			} else {
+				modeValue = 0
+				document.removeEventListener('click', onMouseClick)
+				camcontrols.enabled = true
+			}
+		},
+		pauseTime: () => {
+			pause = !pause
+		},
+	}
+
+	gui.add(guiControls, 'toggleGrid').name('Mostrar/Ocultar Rejilla')
+	gui.add(guiControls, 'resetView').name('Resetear Vista')
+	gui.add(guiControls, 'toggleMode').name('Modo: Moverse/Añadir Cometas')
+	gui.add(guiControls, 'pauseTime').name('Pausar/Reanudar Tiempo')
+
 	const textureLoader = new THREE.TextureLoader()
 	const starTexture = textureLoader.load(TEXTURE.STARS_MILKY_WAY)
 
@@ -181,48 +214,6 @@ function init() {
 
 	// Start time
 	t0 = Date.now()
-
-	// Show/hide grid
-	document.getElementById('onoff').addEventListener('click', (event) => {
-		event.preventDefault()
-		grid.visible = !grid.visible
-		gridState.innerHTML = grid.visible ? 'on' : 'off'
-	})
-
-	// Reset camera
-	document.getElementById('reset').addEventListener('click', (event) => {
-		event.preventDefault()
-		camera.position.copy(cameraInitialPosition)
-		camera.lookAt(0, 0, 0)
-	})
-
-	// Switch mode (move / add comets)
-	document.getElementById('switch').addEventListener('click', (event) => {
-		event.preventDefault()
-		if (modeValue === 0) {
-			modeValue = 1
-			mode.innerHTML = 'añadir cometas'
-			document.addEventListener('click', onMouseClick)
-			camcontrols.enabled = false
-		} else {
-			modeValue = 0
-			mode.innerHTML = 'moverse'
-			document.removeEventListener('click', onMouseClick)
-			camcontrols.enabled = true
-		}
-	})
-
-	// Pause / Resume
-	document.getElementById('pause').addEventListener('click', (event) => {
-		event.preventDefault()
-		if (pause === 0) {
-			pause = 1
-			document.getElementById('pause').innerHTML = 'Reanudar'
-		} else {
-			pause = 0
-			document.getElementById('pause').innerHTML = 'Pausar tiempo'
-		}
-	})
 
 	// Resize event
 	window.addEventListener('resize', () => {
