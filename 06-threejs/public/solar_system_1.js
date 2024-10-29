@@ -66,6 +66,40 @@ const TEXTURE = {
 		'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/haumea.jpg?v=1730055042116',
 }
 
+// Configurar LoadingManager
+const manager = new THREE.LoadingManager()
+
+manager.onLoad = function () {
+	console.log('¡Todas las texturas cargadas!')
+	document.getElementById('loading-container').style.display = 'none'
+	init() // Inicia la escena solo cuando las texturas estén cargadas
+	animationLoop()
+}
+
+manager.onError = function (url) {
+	alert('Hubo un error al cargar')
+	window.location.reload()
+}
+
+// Precargar texturas con TextureLoader y LoadingManager
+const textureLoader = new THREE.TextureLoader(manager)
+const textures = {
+	SUN: textureLoader.load(TEXTURE.SUN),
+	MERCURY: textureLoader.load(TEXTURE.MERCURY),
+	VENUS: textureLoader.load(TEXTURE.VENUS),
+	EARTH: textureLoader.load(TEXTURE.EARTH),
+	MARS: textureLoader.load(TEXTURE.MARS),
+	JUPITER: textureLoader.load(TEXTURE.JUPITER),
+	SATURN: textureLoader.load(TEXTURE.SATURN),
+	SATURN_RING_ALPHA: textureLoader.load(TEXTURE.SATURN_RING_ALPHA),
+	URANUS: textureLoader.load(TEXTURE.URANUS),
+	NEPTUNE: textureLoader.load(TEXTURE.NEPTUNE),
+	PLUTO: textureLoader.load(TEXTURE.PLUTO),
+	MOON: textureLoader.load(TEXTURE.MOON),
+	STARS_MILKY_WAY: textureLoader.load(TEXTURE.STARS_MILKY_WAY),
+	HAUMEA: textureLoader.load(TEXTURE.HAUMEA),
+}
+
 function simulateLoading() {
 	let progress = 0
 	const duration = 10000
@@ -82,11 +116,6 @@ function simulateLoading() {
 		if (progress >= 100) {
 			clearInterval(loadingInterval)
 			loadingText.textContent = '¡Listo para explorar el universo!'
-			setTimeout(() => {
-				document.getElementById('loading-container').style.display = 'none'
-				init()
-				animationLoop()
-			}, 1000)
 		}
 	}, intervalTime)
 }
@@ -130,21 +159,21 @@ function init() {
 	scene.add(grid)
 
 	// Create Sun
-	Star(3.5, TEXTURE.SUN)
+	Star(3.5, 'SUN')
 
 	// Create Planets
-	Planet(0.3, 8.0, 1.6, 1.0, 1.0, TEXTURE.MERCURY) // Mercury
-	Planet(0.6, 10.8, 1.2, 1.0, 1.0, TEXTURE.VENUS) // Venus
-	Planet(0.7, 14.9, 1.0, 1.0, 1.0, TEXTURE.EARTH) // Earth
-	Planet(0.35, 22.7, 0.8, 1.0, 1.0, TEXTURE.MARS) // Mars
-	Planet(1.5, 78.3, 0.4, 1.0, 1.0, TEXTURE.JUPITER) // Jupiter
-	Planet(1.2, 143.0, 0.3, 1.0, 1.0, TEXTURE.SATURN, TEXTURE.SATURN_RING_ALPHA) // Saturn
-	Planet(1.0, 287.0, 0.2, 1.0, 1.0, TEXTURE.URANUS) // Uranus
-	Planet(0.9, 450.0, 0.1, 1.0, 1.0, TEXTURE.NEPTUNE) // Neptune
-	Planet(0.3, 590.0, 0.05, 1.0, 1.0, TEXTURE.PLUTO) // Pluto
+	Planet(0.3, 8.0, 1.6, 1.0, 1.0, 'MERCURY') // Mercury
+	Planet(0.6, 10.8, 1.2, 1.0, 1.0, 'VENUS') // Venus
+	Planet(0.7, 14.9, 1.0, 1.0, 1.0, 'EARTH') // Earth
+	Planet(0.35, 22.7, 0.8, 1.0, 1.0, 'MARS') // Mars
+	Planet(1.5, 78.3, 0.4, 1.0, 1.0, 'JUPITER') // Jupiter
+	Planet(1.2, 143.0, 0.3, 1.0, 1.0, 'SATURN', 'SATURN_RING_ALPHA') // Saturn
+	Planet(1.0, 287.0, 0.2, 1.0, 1.0, 'URANUS') // Uranus
+	Planet(0.9, 450.0, 0.1, 1.0, 1.0, 'NEPTUNE') // Neptune
+	Planet(0.3, 590.0, 0.05, 1.0, 1.0, 'PLUTO') // Pluto
 
 	// Create Moons
-	Moon(Planets[2], 0.1, 1.0, 1.5, 0xffffff, 0, TEXTURE.MOON) // Moon
+	Moon(Planets[2], 0.1, 1.0, 1.5, 0xffffff, 0, 'MOON') // Moon
 	Moon(Planets[4], 0.3, 2.0, 0.6, 0xdcdcdc, 0) // Io
 	Moon(Planets[4], 0.25, 3.0, 0.5, 0xb0c4de, 0.5) // Europa
 	Moon(Planets[4], 0.35, 4.0, 0.4, 0xf0e68c, 1.0) // Ganymede
@@ -252,7 +281,7 @@ function onMouseClick(event) {
 function Star(rad, texture) {
 	let geometry = new THREE.SphereGeometry(rad, 32, 32)
 	let material = new THREE.MeshBasicMaterial({
-		map: new THREE.TextureLoader().load(texture),
+		map: textures[texture],
 	})
 	star = new THREE.Mesh(geometry, material)
 	scene.add(star)
@@ -264,7 +293,7 @@ function Planet(radio, dist, vel, f1, f2, texture, ringsTexture) {
 	// rotate the texture
 	geom.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI / 2))
 	let mat = new THREE.MeshBasicMaterial({
-		map: new THREE.TextureLoader().load(texture),
+		map: textures[texture],
 	})
 	let planet = new THREE.Mesh(geom, mat)
 	planet.userData.dist = dist
@@ -279,7 +308,7 @@ function Planet(radio, dist, vel, f1, f2, texture, ringsTexture) {
 	if (ringsTexture) {
 		const ringGeometry = new THREE.RingGeometry(radio * 1.5, radio * 2.5, 64)
 		const ringMaterial = new THREE.MeshBasicMaterial({
-			map: new THREE.TextureLoader().load(ringsTexture),
+			map: textures[ringsTexture],
 			side: THREE.DoubleSide,
 			transparent: true,
 		})
@@ -309,7 +338,7 @@ function Moon(planet, radio, dist, vel, col, angle, texture) {
 	let mat
 	if (texture) {
 		mat = new THREE.MeshBasicMaterial({
-			map: new THREE.TextureLoader().load(texture),
+			map: textures[texture],
 		})
 	} else {
 		mat = new THREE.MeshBasicMaterial({
