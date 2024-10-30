@@ -18,9 +18,10 @@ let timestamp
 
 let pause = 0
 
-let modeValue = 0
-const mode = document.getElementById('mode')
-const gridState = document.getElementById('off')
+let spaceship = 0
+
+let cameraFollow = 0
+let planet2Follow
 
 const cameraInitialPosition = new THREE.Vector3(0, -50, 30)
 
@@ -161,6 +162,31 @@ function init() {
 		.onChange(function (value) {
 			pause = value
 		})
+	gui
+		.add({ spaceship: false }, 'spaceship')
+		.name('Spaceship')
+		.onChange(function (value) {
+			if (value) {
+				document.addEventListener('keydown', onDocumentKeyDown)
+				cameraControls.enabled = false
+			} else {
+				document.removeEventListener('keydown', onDocumentKeyDown)
+				cameraControls.enabled = true
+			}
+		})
+	gui
+		.add(
+			{
+				resetCamera: () => {
+					camera.position.copy(cameraInitialPosition)
+					camera.lookAt(0, 0, 0)
+					cameraFollow = 0
+				},
+			},
+			'resetCamera'
+		)
+		.name('Reset camera')
+	const followPlanets = gui.addFolder('Follow planets')
 
 	const textureLoader = new THREE.TextureLoader()
 	const starTexture = textureLoader.load(TEXTURE.STARS_MILKY_WAY)
@@ -202,6 +228,20 @@ function init() {
 	Moon(Planets[4], 0.35, 4.0, 0.4, 0xf0e68c, 1.0) // Ganymede
 	Moon(Planets[5], 0.4, 3.5, 0.6, 0xffd700, 0) // Titan
 
+	Planets.forEach((planet) => {
+		followPlanets
+			.add(
+				{
+					[planet.name]: () => {
+						planet2Follow = planet
+						cameraFollow = 1
+					},
+				},
+				planet.name
+			)
+			.name(planet.name)
+	})
+
 	// Start time
 	t0 = Date.now()
 
@@ -211,6 +251,10 @@ function init() {
 		camera.updateProjectionMatrix()
 		renderer.setSize(window.innerWidth, window.innerHeight)
 	})
+}
+
+function onDocumentKeyDown(event) {
+	// TODO: Add spaceship movement
 }
 
 // Create a comet
@@ -270,12 +314,12 @@ function Star(rad, texture) {
 }
 
 // Draw planet
-function Planet(radio, dist, vel, f1, f2, texture, ringsTexture) {
+function Planet(radio, dist, vel, f1, f2, name, ringsTexture) {
 	let geom = new THREE.SphereGeometry(radio, 32, 32)
 	// rotate the texture
 	geom.applyMatrix4(new THREE.Matrix4().makeRotationX(Math.PI / 2))
 	let mat = new THREE.MeshBasicMaterial({
-		map: textures[texture],
+		map: textures[name],
 	})
 	let planet = new THREE.Mesh(geom, mat)
 	planet.userData.dist = dist
@@ -283,6 +327,7 @@ function Planet(radio, dist, vel, f1, f2, texture, ringsTexture) {
 	planet.userData.f1 = f1
 	planet.userData.f2 = f2
 	planet.userData.rotationSpeed = 0.02
+	planet.name = name
 
 	Planets.push(planet)
 	scene.add(planet)
@@ -354,7 +399,11 @@ function animationLoop() {
 				object.userData.f2 *
 				object.userData.dist
 
-			object.rotation.z += object.userData.rotationSpeed
+			if (object.name === 'SATURN') {
+				object.rotation.y += object.userData.rotationSpeed
+			} else {
+				object.rotation.z += object.userData.rotationSpeed
+			}
 		}
 
 		for (let object of Moons) {
@@ -376,6 +425,19 @@ function animationLoop() {
 
 			const pathGeometry = comet.userData.trail.geometry
 			pathGeometry.setFromPoints(cometsPath[index])
+		})
+	}
+
+	if (cameraFollow) {
+		Planets.forEach((planet) => {
+			if (planet2Follow === planet) {
+				camera.position.set(
+					planet.position.x,
+					planet.position.y - 20,
+					planet.position.z + 20
+				)
+				camera.lookAt(planet.position)
+			}
 		})
 	}
 
