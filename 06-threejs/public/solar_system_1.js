@@ -28,17 +28,16 @@ const loadingBar = document.getElementById('loading-bar')
 const loadingText = document.getElementById('loading-text')
 
 const loadingMessages = [
-	'Cargando el sistema solar...',
-	'Calculando la velocidad de la luz...',
-	'Ocurriendo el Big Bang...',
-	'Alineando los planetas...',
-	'Preparando el viaje espacial...',
-	'Sintiendo la gravedad...',
-	'Evitando agujeros negros...',
-	'Configurando órbitas...',
+	'Loading the solar system...',
+	'Calculating the speed of light...',
+	'The Big Bang is happening...',
+	'Aligning the planets...',
+	'Preparing for space travel...',
+	'Feeling the gravity...',
+	'Avoiding black holes...',
+	'Setting up orbits...',
 ]
 
-// Texture paths
 const TEXTURE = {
 	SUN: 'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/sun.jpg?v=1730055099088',
 	MERCURY:
@@ -67,22 +66,20 @@ const TEXTURE = {
 		'https://cdn.glitch.global/bf3eae97-a744-4beb-8396-9016d1d5b291/haumea.jpg?v=1730055042116',
 }
 
-// Configurar LoadingManager
 const manager = new THREE.LoadingManager()
 
 manager.onLoad = function () {
-	console.log('¡Todas las texturas cargadas!')
+	console.log('All the textures are now loaded.')
 	document.getElementById('loading-container').style.display = 'none'
-	init() // Inicia la escena solo cuando las texturas estén cargadas
+	init()
 	animationLoop()
 }
 
 manager.onError = function (url) {
-	alert('Hubo un error al cargar')
+	alert('There was an error loading the texture.')
 	window.location.reload()
 }
 
-// Precargar texturas con TextureLoader y LoadingManager
 const textureLoader = new THREE.TextureLoader(manager)
 const textures = {
 	SUN: textureLoader.load(TEXTURE.SUN),
@@ -112,11 +109,11 @@ function simulateLoading() {
 
 		const messageIndex = Math.floor((progress / 150) * loadingMessages.length)
 		loadingText.textContent =
-			loadingMessages[messageIndex] || 'Cargando el sistema solar...'
+			loadingMessages[messageIndex] || 'Loading the solar system...'
 
 		if (progress >= 100) {
 			clearInterval(loadingInterval)
-			loadingText.textContent = '¡Listo para explorar el universo!'
+			loadingText.textContent = 'Ready to explore the universe!'
 		}
 	}, intervalTime)
 }
@@ -124,7 +121,6 @@ function simulateLoading() {
 simulateLoading()
 
 function init() {
-	// Define camera
 	scene = new THREE.Scene()
 	camera = new THREE.PerspectiveCamera(
 		75,
@@ -138,39 +134,33 @@ function init() {
 	renderer.setSize(window.innerWidth, window.innerHeight)
 	document.body.appendChild(renderer.domElement)
 
-	let camcontrols = new OrbitControls(camera, renderer.domElement)
+	let cameraControls = new OrbitControls(camera, renderer.domElement)
 
-	// Inicializar lil-gui
 	const gui = new GUI()
-	const guiControls = {
-		toggleGrid: () => {
-			grid.visible = !grid.visible
-		},
-		resetView: () => {
-			camera.position.set(0, -50, 30)
-			camera.lookAt(0, 0, 0)
-		},
-		toggleMode: () => {
-			modeValue = modeValue === 0 ? 1 : 0
-			if (modeValue === 0) {
-				modeValue = 1
+	gui
+		.add({ grid: false }, 'grid')
+		.name('Grid')
+		.onChange(function (value) {
+			grid.visible = value
+		})
+	gui
+		.add({ comet: false }, 'comet')
+		.name('Comet')
+		.onChange(function (value) {
+			if (value) {
 				document.addEventListener('click', onMouseClick)
-				camcontrols.enabled = false
+				cameraControls.enabled = false
 			} else {
-				modeValue = 0
 				document.removeEventListener('click', onMouseClick)
-				camcontrols.enabled = true
+				cameraControls.enabled = true
 			}
-		},
-		pauseTime: () => {
-			pause = !pause
-		},
-	}
-
-	gui.add(guiControls, 'toggleGrid').name('Mostrar/Ocultar Rejilla')
-	gui.add(guiControls, 'resetView').name('Resetear Vista')
-	gui.add(guiControls, 'toggleMode').name('Modo: Moverse/Añadir Cometas')
-	gui.add(guiControls, 'pauseTime').name('Pausar/Reanudar Tiempo')
+		})
+	gui
+		.add({ pause: false }, 'pause')
+		.name('Pause time')
+		.onChange(function (value) {
+			pause = value
+		})
 
 	const textureLoader = new THREE.TextureLoader()
 	const starTexture = textureLoader.load(TEXTURE.STARS_MILKY_WAY)
@@ -275,6 +265,7 @@ function Star(rad, texture) {
 		map: textures[texture],
 	})
 	star = new THREE.Mesh(geometry, material)
+	star.userData.rotationSpeed = 0.005
 	scene.add(star)
 }
 
@@ -321,9 +312,9 @@ function Planet(radio, dist, vel, f1, f2, texture, ringsTexture) {
 
 // Draw moon
 function Moon(planet, radio, dist, vel, col, angle, texture) {
-	let pivote = new THREE.Object3D()
-	pivote.rotation.x = angle
-	planet.add(pivote)
+	let pivot = new THREE.Object3D()
+	pivot.rotation.x = angle
+	planet.add(pivot)
 
 	let geom = new THREE.SphereGeometry(radio, 32, 32)
 	let mat
@@ -339,10 +330,10 @@ function Moon(planet, radio, dist, vel, col, angle, texture) {
 	let luna = new THREE.Mesh(geom, mat)
 	luna.userData.dist = dist
 	luna.userData.speed = vel
-	luna.userData.rotationSpeed = 0.02
+	luna.userData.rotationSpeed = 0.01
 
 	Moons.push(luna)
-	pivote.add(luna)
+	pivot.add(luna)
 }
 
 function animationLoop() {
@@ -351,6 +342,8 @@ function animationLoop() {
 	requestAnimationFrame(animationLoop)
 
 	if (!pause) {
+		star.rotation.z += star.userData.rotationSpeed
+
 		for (let object of Planets) {
 			object.position.x =
 				Math.cos(timestamp * object.userData.speed) *
@@ -361,11 +354,7 @@ function animationLoop() {
 				object.userData.f2 *
 				object.userData.dist
 
-			if (object === Planets[2]) {
-				object.rotation.z += object.userData.rotationSpeed
-			} else {
-				object.rotation.y += object.userData.rotationSpeed
-			}
+			object.rotation.z += object.userData.rotationSpeed
 		}
 
 		for (let object of Moons) {
@@ -374,7 +363,7 @@ function animationLoop() {
 			object.position.y =
 				Math.sin(timestamp * object.userData.speed) * object.userData.dist
 
-			object.rotation.y += object.userData.rotationSpeed
+			object.rotation.z += object.userData.rotationSpeed
 		}
 
 		comets.forEach((comet, index) => {
