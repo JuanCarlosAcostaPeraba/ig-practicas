@@ -14,3 +14,4 @@
 - Botón para activar la rejilla del plano.
 - Botón para parar el movimiento de los planetas.
 - Botón para seguir el movimiento de un planeta.
+- Utilización de la librería lil gui para manejo de la configuración.
