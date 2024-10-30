@@ -18,8 +18,6 @@ let timestamp
 
 let pause = 0
 
-let spaceship = 0
-
 let cameraFollow = 0
 let planet2Follow
 
@@ -162,18 +160,17 @@ function init() {
 		.onChange(function (value) {
 			pause = value
 		})
-	gui
-		.add({ spaceship: false }, 'spaceship')
-		.name('Spaceship')
-		.onChange(function (value) {
-			if (value) {
-				document.addEventListener('keydown', onDocumentKeyDown)
-				cameraControls.enabled = false
-			} else {
-				document.removeEventListener('keydown', onDocumentKeyDown)
-				cameraControls.enabled = true
-			}
-		})
+	// TODO: Fix spaceship
+	// gui
+	// 	.add({ spaceship: false }, 'spaceship')
+	// 	.name('Spaceship')
+	// 	.onChange(function (value) {
+	// 		if (value) {
+	// 			cameraControls.enabled = false
+	// 		} else {
+	// 			cameraControls.enabled = true
+	// 		}
+	// 	})
 	gui
 		.add(
 			{
@@ -251,10 +248,6 @@ function init() {
 		camera.updateProjectionMatrix()
 		renderer.setSize(window.innerWidth, window.innerHeight)
 	})
-}
-
-function onDocumentKeyDown(event) {
-	// TODO: Add spaceship movement
 }
 
 // Create a comet
