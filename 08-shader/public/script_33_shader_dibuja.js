@@ -69,11 +69,17 @@ document.onmousemove = function (e) {
 
 function PlaneShader(sx, sy, fragsh) {
 	let geometry = new THREE.PlaneBufferGeometry(sx, sy)
+	// let material = new THREE.ShaderMaterial({
+	// 	uniforms: uniforms,
+	// 	//Color sólido
+	// 	fragmentShader: fragsh,
+	// 	vertexShader: vertexShader(),
+	// })
 	let material = new THREE.ShaderMaterial({
 		uniforms: uniforms,
-		//Color sólido
 		fragmentShader: fragsh,
 		vertexShader: vertexShader(),
+		precision: 'highp',
 	})
 
 	let mesh = new THREE.Mesh(geometry, material)
@@ -104,15 +110,14 @@ function animationLoop() {
 
 function vertexShader() {
 	return `
-				varying vec3 vUv; 
-				varying vec4 modelViewPosition; 
-				
-				void main() {
-				  vUv = position; 
-				  vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
-				  gl_Position = projectionMatrix * modelViewPosition; 
-				}
-			  `
+			varying vec3 vUv;
+			
+			void main() {
+					vUv = position;
+					vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
+					gl_Position = projectionMatrix * modelViewPosition;
+			}
+	`
 }
 
 function fragmentShader_01() {
