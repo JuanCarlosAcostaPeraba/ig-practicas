@@ -24,7 +24,7 @@ const params = {
 let velocidadSimulacion = params.velocidad
 
 //Datos fecha, estaciones, préstamos
-const fechaInicio = new Date(2018, 4, 1) //Desde mayo (enero es 0)
+const fechaInicio = new Date(2024, 9, 1)
 let fechaActual
 let totalMinutos = 0,
 	fecha2show
@@ -179,7 +179,7 @@ function init() {
 	}
 
 	//Carga datos de un año de préstamos desde el csv
-	fetch('SITYCLETA-2018.csv')
+	fetch('SITYCLETA-2024.csv')
 		.then((response) => {
 			if (!response.ok) {
 				throw new Error('Error: ' + response.statusText)
