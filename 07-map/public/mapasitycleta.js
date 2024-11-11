@@ -15,16 +15,6 @@ let txwidth, txheight
 
 let objetos = []
 
-const tiposDeParadas = {
-	Todas: 'todas',
-	'Con Alquiler Activo': 'activos',
-	'Paradas de Inicio': 'inicio',
-	'Paradas de Fin': 'fin',
-}
-const params = {
-	tipoParada: 'todas',
-}
-
 //Datos fecha, estaciones, préstamos
 const fechaInicio = new Date(2018, 4, 1) //Desde mayo (enero es 0)
 let fechaActual
@@ -71,10 +61,6 @@ function init() {
 	camcontrols = new OrbitControls(camera, renderer.domElement)
 
 	const gui = new GUI()
-	gui
-		.add(params, 'tipoParada', tiposDeParadas)
-		.name('Tipo de Parada')
-		.onChange(filtrarYResaltarEstaciones)
 
 	//Objeto sobre el que se mapea la textura del mapa
 	//Dimensiones por defecto
@@ -229,68 +215,6 @@ function init() {
 
 	window.addEventListener('click', clickEnEsfera)
 	window.addEventListener('resize', resizeWindow)
-}
-
-function filtrarYResaltarEstaciones() {
-	const tipoSeleccionado = params.tipoParada
-
-	// Resetear todas las estaciones al color rojo y tamaño original
-	objetos.forEach((objeto) => {
-		objeto.material.color.set(0xff0000)
-		objeto.scale.set(1, 1, 1)
-	})
-
-	if (tipoSeleccionado === 'todas') return
-
-	// Filtrar estaciones según el tipo seleccionado
-	let estacionesAResaltar
-	switch (tipoSeleccionado) {
-		case 'activos':
-			estacionesAResaltar = datosSitycleta.filter((registro) => {
-				return registro.t_inicio <= fechaActual && registro.t_fin >= fechaActual
-			})
-			break
-		case 'inicio':
-			estacionesAResaltar = datosSitycleta
-				.filter((registro) => {
-					return (
-						registro.t_inicio <= fechaActual && registro.t_fin >= fechaActual
-					)
-				})
-				.map((registro) => registro.p_inicio)
-			break
-		case 'fin':
-			estacionesAResaltar = datosSitycleta
-				.filter((registro) => {
-					return (
-						registro.t_inicio <= fechaActual && registro.t_fin >= fechaActual
-					)
-				})
-				.map((registro) => registro.p_fin)
-			break
-	}
-
-	// Resaltar estaciones filtradas
-	estacionesAResaltar.forEach((nombreEstacion) => {
-		const estacion = datosEstaciones.find(
-			(est) => est.nombre === nombreEstacion
-		)
-		if (estacion) {
-			const objetoEstacion = objetos.find(
-				(obj) => obj.userData.nombre === estacion.nombre
-			)
-			if (objetoEstacion) {
-				// Cambiar color según el tipo
-				let color
-				if (tipoSeleccionado === 'inicio') color = 0x00ff00 // Verde para inicio
-				else if (tipoSeleccionado === 'fin') color = 0x0000ff // Azul para fin
-				else color = 0x00ffff // Cian para activos
-
-				objetoEstacion.material.color.set(color)
-				objetoEstacion.scale.set(1.5, 1.5, 1.5)
-			}
-		}
-	})
 }
 
 function clickEnEsfera(event) {
