@@ -15,6 +15,14 @@ let txwidth, txheight
 
 let objetos = []
 
+const gui = new GUI()
+const params = {
+	velocidad: 1, // Minutos simulados por segundo real
+}
+
+// Variables de simulación
+let velocidadSimulacion = params.velocidad
+
 //Datos fecha, estaciones, préstamos
 const fechaInicio = new Date(2018, 4, 1) //Desde mayo (enero es 0)
 let fechaActual
@@ -60,7 +68,10 @@ function init() {
 
 	camcontrols = new OrbitControls(camera, renderer.domElement)
 
-	const gui = new GUI()
+	gui
+		.add(params, 'velocidad', 1, 60, 1)
+		.name('Velocidad (min/s)')
+		.onChange((value) => actualizarVelocidad(value))
 
 	//Objeto sobre el que se mapea la textura del mapa
 	//Dimensiones por defecto
@@ -284,12 +295,20 @@ function convertirFecha(fechaStr) {
 	return new Date(año, mes - 1, dia, horas, minutos) // mes es 0-indexado
 }
 
+// Función para actualizar la velocidad de simulación
+function actualizarVelocidad(nuevaVelocidad) {
+	velocidadSimulacion = nuevaVelocidad // Ajusta la nueva velocidad
+}
+
+// Modifica la función actualizarFecha para que utilice la velocidad de simulación
 function actualizarFecha() {
-	totalMinutos += 1
-	// Añade fecha de partida
+	// Calcula los minutos a avanzar según la velocidad de simulación
+	totalMinutos += velocidadSimulacion
+
+	// Suma esos minutos a la fecha inicial para obtener la fecha actual
 	fechaActual = new Date(fechaInicio.getTime() + totalMinutos * 60000)
 
-	// Formatea salida
+	// Formatea y muestra la fecha actual en la pantalla
 	const opciones = {
 		year: 'numeric',
 		month: 'long',
@@ -299,7 +318,6 @@ function actualizarFecha() {
 		second: '2-digit',
 		timeZoneName: 'short',
 	}
-	//Modifica en pantalla
 	fecha2show.innerHTML = fechaActual.toLocaleString('es-ES', opciones)
 }
 
