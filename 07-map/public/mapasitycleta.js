@@ -256,7 +256,7 @@ function mostrarToast(estacion) {
 	// Ocultar el toast después de 3 segundos
 	setTimeout(() => {
 		toast.style.display = 'none'
-	}, 3000)
+	}, 5000)
 }
 
 //valor, rango origen, rango destino
