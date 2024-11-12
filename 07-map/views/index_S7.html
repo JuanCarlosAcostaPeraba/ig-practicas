@@ -6,7 +6,7 @@
   <title>Mi ThreeJS - IG-EII-ULPGC</title>
   <link rel="stylesheet" href="/style.css">
   <style>
-    div#toast {
+    #toast {
       position: fixed;
       bottom: 20px;
       left: 50%;
@@ -19,6 +19,12 @@
       font-family: Arial, sans-serif;
       z-index: 10;
       text-align: center;
+      transition: opacity 0.3s ease;
+      opacity: 0;
+    }
+
+    #toast.show {
+      opacity: 1;
     }
   </style>
 </head>
