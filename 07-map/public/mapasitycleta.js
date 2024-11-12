@@ -137,7 +137,6 @@ function init() {
 			lat: encabezados.indexOf('latitud'),
 			lon: encabezados.indexOf('altitud'),
 		}
-		console.log(indices)
 
 		// Extrae los datos de interés
 		for (let i = 1; i < filas.length; i++) {
