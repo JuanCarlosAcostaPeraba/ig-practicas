@@ -24,7 +24,7 @@ const params = {
 let velocidadSimulacion = params.velocidad
 
 //Datos fecha, estaciones, préstamos
-const fechaInicio = new Date(2024, 9, 1)
+const fechaInicio = new Date(2024, 8, 1)
 let fechaActual
 let totalMinutos = 0,
 	fecha2show
@@ -378,9 +378,7 @@ function resizeWindow() {
 
 //Bucle de animación
 function animate() {
-	//Actualiza hora actual
 	actualizarFecha()
-	//Filtra alquileres activos y destaca estaciones afectadas
 	filtraparadasActivas()
 
 	requestAnimationFrame(animate)
