@@ -18,6 +18,7 @@ let objetos = []
 const gui = new GUI()
 const params = {
 	velocidad: 1, // Minutos simulados por segundo real
+	tipoDatos: 'Todos los alquileres', // Tipo de datos a mostrar
 }
 
 // Variables de simulación
@@ -72,6 +73,18 @@ function init() {
 		.add(params, 'velocidad', 1, 60, 1)
 		.name('Velocidad (min/s)')
 		.onChange((value) => actualizarVelocidad(value))
+
+	gui
+		.add(params, 'tipoDatos', [
+			'Bicis disponibles',
+			'Alquileres foráneos',
+			'Todos los alquileres',
+		])
+		.name('Datos a visualizar')
+		.onChange((value) => {
+			// Ejecutar función para cargar el tipo de datos seleccionado
+			cargarDatosSeleccionados(value)
+		})
 
 	//Objeto sobre el que se mapea la textura del mapa
 	//Dimensiones por defecto
@@ -178,20 +191,45 @@ function init() {
 		console.log('Archivo csv estaciones cargado')
 	}
 
-	//Carga datos de un año de préstamos desde el csv
-	fetch('SITYCLETA-2024.csv')
-		.then((response) => {
-			if (!response.ok) {
-				throw new Error('Error: ' + response.statusText)
-			}
-			return response.text()
-		})
-		.then((content) => {
-			procesarCSVAlquileres(content)
-		})
-		.catch((error) => {
-			console.error('Error al cargar el archivo:', error)
-		})
+	// Función para cargar los datos según la opción seleccionada
+	function cargarDatosSeleccionados(tipo) {
+		// Limpiar datos y objetos previos
+		datosSitycleta.length = 0
+		objetos.forEach((obj) => scene.remove(obj))
+		objetos.length = 0
+
+		let archivoCSV
+		switch (tipo) {
+			case 'Bicis disponibles':
+				archivoCSV = 'BicisDisponibles.csv'
+				break
+			case 'Alquileres foráneos':
+				archivoCSV = 'AlquileresForaneos.csv'
+				break
+			case 'Todos los alquileres':
+				archivoCSV = 'SITYCLETA-2024.csv'
+				break
+			default:
+				archivoCSV = 'SITYCLETA-2024.csv'
+		}
+
+		// Cargar archivo CSV seleccionado
+		fetch(archivoCSV)
+			.then((response) => {
+				if (!response.ok) {
+					throw new Error('Error: ' + response.statusText)
+				}
+				return response.text()
+			})
+			.then((content) => {
+				procesarCSVAlquileres(content) // Procesar y mostrar datos
+			})
+			.catch((error) => {
+				console.error('Error al cargar el archivo:', error)
+			})
+	}
+
+	cargarDatosSeleccionados(params.tipoDatos)
 
 	function procesarCSVAlquileres(content) {
 		const sep = ';' // separador ;
@@ -246,16 +284,20 @@ function clickEnEsfera(event) {
 function mostrarToast(estacion) {
 	const toast = document.getElementById('toast')
 	toast.innerHTML = `
-      <strong>${estacion.nombre}</strong><br>
-      ID: ${estacion.id}<br>
-      Latitud: ${estacion.lat}<br>
-      Longitud: ${estacion.lon}
-  `
+			<strong>${estacion.nombre}</strong><br>
+			ID: ${estacion.id}<br>
+			Latitud: ${estacion.lat}<br>
+			Longitud: ${estacion.lon}
+	`
+	toast.classList.add('show')
 	toast.style.display = 'block'
 
 	// Ocultar el toast después de 3 segundos
 	setTimeout(() => {
-		toast.style.display = 'none'
+		toast.classList.remove('show')
+		setTimeout(() => {
+			toast.style.display = 'none'
+		}, 300) // Tiempo del fade-out
 	}, 5000)
 }
 
