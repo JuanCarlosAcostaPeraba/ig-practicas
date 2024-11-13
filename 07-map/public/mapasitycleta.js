@@ -334,10 +334,10 @@ function toggleTemperatura() {
 }
 
 function mostrarTemperatura(data) {
-	console.log(data, fechaActual)
+	console.log(fechaActual)
 	temperatureToast.innerHTML = `
 		<strong>Temperatura</strong><br>
-		<span id="date">Día: ${fechaActual.toLocaleString('es-ES', opciones)}</span><br>
+		<span id="date">Día:</span><br>
 		Máxima: ${1}°C<br>
 		Mínima: ${2}°C
 	`
@@ -383,7 +383,9 @@ function actualizarFecha() {
 	fecha2show.innerHTML = fechaActual.toLocaleString('es-ES', opciones)
 	const temperatureDate = document.getElementById('date')
 	if (temperatureDate) {
-		temperatureDate.innerHTML = fechaActual.toLocaleString('es-ES', opciones)
+		temperatureDate.innerHTML = fechaActual
+			.toLocaleString('es-ES', opciones)
+			.split(',')[0]
 	}
 }
 
