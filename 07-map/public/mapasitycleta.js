@@ -18,7 +18,24 @@ let objetos = []
 const gui = new GUI()
 const params = {
 	velocidad: 1, // Minutos simulados por segundo real
+	temperatura: false, // Mostrar temperatura
 }
+
+// Formatea y muestra la fecha actual en la pantalla
+const opciones = {
+	year: 'numeric',
+	month: 'long',
+	day: 'numeric',
+	hour: '2-digit',
+	minute: '2-digit',
+	second: '2-digit',
+	timeZoneName: 'short',
+}
+
+const temperatureToast = document.getElementById('temperature')
+
+const WEATHER_API =
+	'https://api.open-meteo.com/v1/forecast?latitude=28.0997&longitude=-15.4134&daily=temperature_2m_max,temperature_2m_min&start_date=2024-09-01&end_date=2024-10-31'
 
 // Variables de simulación
 let velocidadSimulacion = params.velocidad
@@ -72,6 +89,11 @@ function init() {
 		.add(params, 'velocidad', 1, 60, 1)
 		.name('Velocidad (min/s)')
 		.onChange((value) => actualizarVelocidad(value))
+
+	gui
+		.add(params, 'temperatura')
+		.name('Mostrar temperatura')
+		.onChange(toggleTemperatura)
 
 	//Objeto sobre el que se mapea la textura del mapa
 	//Dimensiones por defecto
@@ -302,6 +324,54 @@ function actualizarVelocidad(nuevaVelocidad) {
 	velocidadSimulacion = nuevaVelocidad // Ajusta la nueva velocidad
 }
 
+// Función para mostrar u ocultar la temperatura
+function toggleTemperatura() {
+	if (params.temperatura) {
+		obtenerTemperatura()
+	} else {
+		temperatureToast.classList.remove('show')
+	}
+}
+
+function mostrarTemperatura(data) {
+	console.log(data, fechaActual)
+	temperatureToast.innerHTML = `
+		<strong>Temperatura</strong><br>
+		<span id="date">Día: ${fechaActual.toLocaleString('es-ES', opciones)}</span><br>
+		Máxima: ${1}°C<br>
+		Mínima: ${2}°C
+	`
+	temperatureToast.classList.add('show')
+}
+
+function obtenerTemperatura() {
+	fetch(WEATHER_API)
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error('Error: ' + response.statusText)
+			}
+			return response.json()
+		})
+		.then((data) => {
+			const maxTemp = data.daily.temperature_2m_max
+			const minTemp = data.daily.temperature_2m_min
+			const days = data.daily.time
+			// loop to create a new json object with the date and the max and min temperature for each day
+			const tempData = days.map((day, index) => {
+				return {
+					date: day,
+					max: maxTemp[index],
+					min: minTemp[index],
+				}
+			})
+
+			mostrarTemperatura(tempData)
+		})
+		.catch((error) => {
+			console.error('Error al obtener la temperatura:', error)
+		})
+}
+
 // Modifica la función actualizarFecha para que utilice la velocidad de simulación
 function actualizarFecha() {
 	// Calcula los minutos a avanzar según la velocidad de simulación
@@ -310,17 +380,11 @@ function actualizarFecha() {
 	// Suma esos minutos a la fecha inicial para obtener la fecha actual
 	fechaActual = new Date(fechaInicio.getTime() + totalMinutos * 60000)
 
-	// Formatea y muestra la fecha actual en la pantalla
-	const opciones = {
-		year: 'numeric',
-		month: 'long',
-		day: 'numeric',
-		hour: '2-digit',
-		minute: '2-digit',
-		second: '2-digit',
-		timeZoneName: 'short',
-	}
 	fecha2show.innerHTML = fechaActual.toLocaleString('es-ES', opciones)
+	const temperatureDate = document.getElementById('date')
+	if (temperatureDate) {
+		temperatureDate.innerHTML = fechaActual.toLocaleString('es-ES', opciones)
+	}
 }
 
 function filtraparadasActivas() {
