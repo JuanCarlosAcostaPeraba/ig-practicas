@@ -268,8 +268,8 @@ function mostrarToast(estacion) {
 	toast.innerHTML = `
 			<strong>${estacion.nombre}</strong><br>
 			ID: ${estacion.id}<br>
-			Latitud: ${estacion.lat}<br>
-			Longitud: ${estacion.lon}
+			Lat: ${estacion.lat}<br>
+			Lon: ${estacion.lon}
 	`
 	toast.classList.add('show')
 	toast.style.display = 'block'
@@ -334,7 +334,7 @@ function toggleTemperatura() {
 }
 
 function mostrarTemperatura(data) {
-	console.log(fechaActual)
+	console.log(fechaActual, data)
 	temperatureToast.innerHTML = `
 		<strong>Temperatura</strong><br>
 		<span id="date">Día:</span><br>
