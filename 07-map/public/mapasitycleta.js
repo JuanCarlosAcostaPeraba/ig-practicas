@@ -405,6 +405,8 @@ function actualizarFecha() {
 function actualizarTemperatura() {
 	if (params.temperatura) {
 		obtenerTemperatura()
+	} else {
+		temperatureToast.classList.remove('show')
 	}
 }
 
