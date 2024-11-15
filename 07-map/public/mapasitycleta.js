@@ -397,6 +397,14 @@ function actualizarFecha() {
 		temperatureDate.innerHTML = fechaActual
 			.toLocaleString('es-ES', opciones)
 			.split(',')[0]
+
+		actualizarTemperatura()
+	}
+}
+
+function actualizarTemperatura() {
+	if (params.temperatura) {
+		obtenerTemperatura()
 	}
 }
 
