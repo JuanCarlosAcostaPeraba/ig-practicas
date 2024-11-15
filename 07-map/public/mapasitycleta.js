@@ -263,6 +263,14 @@ function clickEnEsfera(event) {
 	}
 }
 
+function obtenerTemperaturas(fecha, data) {
+	const fechaFormato = fecha.toISOString().split('T')[0]
+
+	const resultado = data.find((dia) => dia.date === fechaFormato)
+
+	return resultado
+}
+
 function mostrarToast(estacion) {
 	const toast = document.getElementById('toast')
 	toast.innerHTML = `
@@ -334,12 +342,15 @@ function toggleTemperatura() {
 }
 
 function mostrarTemperatura(data) {
-	console.log(fechaActual, data)
+	const temperaturasDia = obtenerTemperaturas(fechaActual, data)
+
+	const { max, min } = temperaturasDia
+
 	temperatureToast.innerHTML = `
 		<strong>Temperatura</strong><br>
 		<span id="date">Día:</span><br>
-		Máxima: ${1}°C<br>
-		Mínima: ${2}°C
+		Máxima: ${max}°C<br>
+		Mínima: ${min}°C
 	`
 	temperatureToast.classList.add('show')
 }
