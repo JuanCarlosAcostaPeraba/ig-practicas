@@ -6,7 +6,7 @@ let app = express()
 app.use(express.static('public'))
 
 app.get('/', function (request, response) {
-	response.sendFile(__dirname + '/views/index_S6.html')
+	response.sendFile(__dirname + '/views/index_S9.html')
 })
 
 let listener = app.listen(PORT, function () {

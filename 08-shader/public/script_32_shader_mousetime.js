@@ -14,12 +14,12 @@ animationLoop();
 
 function init() {
   camera = new THREE.PerspectiveCamera(
-    20,
+    45,
     window.innerWidth / window.innerHeight,
     0.1,
     1000
   );
-  camera.position.set(0, 0, 5);
+  camera.position.set(0, 0, 15);
 
   scene = new THREE.Scene();
   renderer = new THREE.WebGLRenderer();
@@ -44,10 +44,22 @@ function init() {
   };
 
   //Con color sólido
-  //Plane(5,2,0x0000ff)
-  PlaneShader(5, 2, fragmentShader_03());
+  EsferaShader(-3.0, 0, 0, 1, 10, 10, fragmentShader_01());
+  //Color dependiente del píxel
+  EsferaShader(-1, 0, 0, 1, 10, 10, fragmentShader_02());
+  //Color dependiente del puntero
+  EsferaShader(1, 0, 0, 1, 10, 10, fragmentShader_03());
+  //Color dependiente del puntero y tiempo
+  EsferaShader(3.0, 0, 0, 1, 10, 10, fragmentShader_04());
 
   camcontrols = new OrbitControls(camera, renderer.domElement);
+
+  //Rejilla de referencia indicando tamaño y divisiones
+  grid = new THREE.GridHelper(20, 40);
+  //Mostrarla en vertical
+  grid.geometry.rotateX(Math.PI / 2);
+  grid.position.set(0, 0, 0.05);
+  scene.add(grid);
 
   //Dmensiones iniciales
   onWindowResize();
@@ -67,8 +79,8 @@ document.onmousemove = function (e) {
   uniforms.u_mouse.value.y = e.pageY / window.innerHeight;
 };
 
-function PlaneShader(sx, sy, fragsh) {
-  let geometry = new THREE.PlaneBufferGeometry(sx, sy);
+function EsferaShader(px, py, pz, radio, nx, ny, fragsh) {
+  let geometry = new THREE.SphereBufferGeometry(radio, nx, ny);
   let material = new THREE.ShaderMaterial({
     uniforms: uniforms,
     //Color sólido
@@ -77,17 +89,7 @@ function PlaneShader(sx, sy, fragsh) {
   });
 
   let mesh = new THREE.Mesh(geometry, material);
-  scene.add(mesh);
-  objetos.push(mesh);
-}
-
-function Plane(sx, sy, col) {
-  let geometry = new THREE.PlaneBufferGeometry(sx, sy);
-  let material = new THREE.ShaderMaterial({
-    color: col,
-  });
-
-  let mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(px, py, pz);
   scene.add(mesh);
   objetos.push(mesh);
 }
@@ -98,6 +100,11 @@ function animationLoop() {
 
   //Incrementa tiempo
   uniforms.u_time.value += 0.05;
+
+  //Modifica rotación de todos los objetos presentes
+  for (let object of objetos) {
+    object.rotation.y += 0.01;
+  }
 
   renderer.render(scene, camera);
 }
@@ -117,68 +124,44 @@ function vertexShader() {
 
 function fragmentShader_01() {
   return `
-					uniform vec2 u_resolution;
-					uniform float u_time;
-
-					void main() {
-					//Normalizamos coordenadas del píxel en base a la resolución
-					vec2 st = gl_FragCoord.xy/u_resolution;
-
-					//Escala de grises izquierda a derecha
-					gl_FragColor = vec4(vec3(st.x),1.0);
-					}
+				  void main() {
+					gl_FragColor = vec4(0.831,0.567,1.000,1.000);
+				  }
 			  `;
 }
 
 function fragmentShader_02() {
   return `
 				uniform vec2 u_resolution;
-				uniform float u_time;
-
-				float grosor=0.1;
-
+				
 				void main() {
-					vec2 st = gl_FragCoord.xy/u_resolution.xy;
-
-					vec3 color = vec3(st.x);	//Escala de grises izquierda a derecha;
-					// Línea    
-					if (st.y-grosor<st.x && st.x<st.y+grosor)
-						color = vec3(0.0,1.0,0.0);	//Verde
-
-					gl_FragColor = vec4(color,1.0);
-				}
+					vec2 st = gl_FragCoord.xy/u_resolution;
+					gl_FragColor = 		vec4(st.x,st.y,0.0,1.0);
+          }
 			  `;
 }
 
 function fragmentShader_03() {
   return `
 				uniform vec2 u_resolution;
+				uniform vec2 u_mouse;
+				
+				void main() {
+					vec2 mouse = u_mouse/u_resolution;
+					gl_FragColor = vec4(u_mouse.x,u_mouse.y,0.0,1.000);
+				}
+			  `;
+}
+
+function fragmentShader_04() {
+  return `
+				uniform vec2 u_resolution;
+				uniform vec2 u_mouse;
 				uniform float u_time;
 
-				float grosor=0.1;
-
-				float plot(vec2 st, float pct){
-				//smoothstep da salida suave entre dos valores (Hermite)
-				//Combina dos para crear el chichón
-				return  smoothstep( pct-grosor, pct, st.y) -
-						smoothstep( pct, pct+grosor, st.y);
-				}
-
 				void main() {
-				  vec2 st = gl_FragCoord.xy/u_resolution.xy;
-
-				  vec3 color = vec3(st.x);	//Escala de grises izquierda a derecha;
-
-				  //Valor a tomar como referencia para bordes suaves
-				  float val = st.x;
-
-				  //Combina escala con línea según el valor de pct
-				  float pct = plot(st,val);
-          
-				  // Valores altos verde, bajos escala de grises
-				  color = (1.0-pct)*color+pct*vec3(0.0,1.0,0.0);
-
-				  gl_FragColor = vec4(color,1.0);
+					vec2 mouse = u_mouse/u_resolution;
+					gl_FragColor = vec4(u_mouse.x,u_mouse.y,abs(sin(u_time)),1.000);
 				}
 			  `;
 }
