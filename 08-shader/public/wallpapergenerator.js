@@ -67,6 +67,7 @@ function init() {
 			Contours: 1,
 			Flow: 2,
 			Fractals: 3,
+			Lines: 4, // New "Lines" mode
 		})
 		.name('Mode')
 	gui.add(uniforms.u_bend, 'value', 0.0, 10.0, 0.1).name('Bend Strength')
@@ -120,6 +121,14 @@ function fragmentShader() {
 					return result * 0.5 + 0.5; // Normalize to [0,1]
 			}
 
+			// Function for line effect
+			float linePattern(vec2 st, float time) {
+					// Create a pattern that resembles contour lines
+					float value = sin(st.x * 10.0 + st.y * 10.0 + time * u_speed);
+					value = abs(fract(value) - 0.5); // Generate smooth bands
+					return value * 2.0; // Normalize to [0, 1]
+			}
+
 			void main() {
 					vec2 st = gl_FragCoord.xy / u_resolution.xy;
 					st -= 0.5; // Center the coordinates
@@ -149,6 +158,9 @@ function fragmentShader() {
 					// Fractal pattern for the new mode
 					float fractal = fractalPattern(st, u_time * u_speed);
 
+					// Line pattern for the new mode
+					float lines = linePattern(st, u_time);
+
 					vec3 color = mix(u_color1, u_color2, wave); // Default to Waves
 
 					if (u_mode == 1) {
@@ -157,6 +169,8 @@ function fragmentShader() {
 							color = mix(u_color1, u_color2, flow); // Flowing Pattern with Bend
 					} else if (u_mode == 3) {
 							color = mix(u_color1, u_color2, fractal); // Fractal Pattern
+					} else if (u_mode == 4) {
+							color = mix(u_color1, u_color2, lines); // Line Effect
 					}
 
 					gl_FragColor = vec4(color, 1.0);
