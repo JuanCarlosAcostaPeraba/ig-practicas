@@ -145,6 +145,9 @@ function saveImage() {
 	}
 
 	try {
+		// Force a render to ensure the canvas has the latest frame
+		renderer.render(scene, camera)
+
 		// Convert the canvas content to a data URL (PNG format)
 		const dataURL = canvas.toDataURL('image/png')
 
