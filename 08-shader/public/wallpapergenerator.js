@@ -67,7 +67,7 @@ function init() {
 			Contours: 1,
 			Flow: 2,
 			Fractals: 3,
-			Lines: 4, // New "Lines" mode
+			Lines: 4,
 		})
 		.name('Mode')
 	gui.add(uniforms.u_bend, 'value', 0.0, 10.0, 0.1).name('Bend Strength')
@@ -95,86 +95,97 @@ function vertexShader() {
 // Fragment Shader
 function fragmentShader() {
 	return `
-			uniform vec2 u_resolution;
-			uniform float u_time;
-			uniform vec3 u_color1;
-			uniform vec3 u_color2;
-			uniform int u_mode;
-			uniform float u_bend;
-			uniform float u_speed;
-			uniform float u_rotation;
-			uniform float u_repeat;
+		uniform vec2 u_resolution;
+		uniform float u_time;
+		uniform vec3 u_color1;
+		uniform vec3 u_color2;
+		uniform int u_mode;
+		uniform float u_bend;
+		uniform float u_speed;
+		uniform float u_rotation;
+		uniform float u_repeat;
 
-			// Function for fractal effect
-			float fractalPattern(vec2 st, float time) {
-					vec2 uv = st * 1.0; // Tile the pattern
-					float scale = 1.0;
-					float result = 0.0;
+		// Simple 2D noise function for variation
+		float noise(vec2 st) {
+			return fract(sin(dot(st, vec2(12.9898, 78.233))) * 43758.5453123);
+		}
 
-					for (int i = 0; i < 5; i++) { // Fractal depth
-							uv = abs(uv - 0.5) * 2.0; // Create the Sierpinski-like effect
-							result += (sin(uv.x * 10.0 + time) * sin(uv.y * 10.0 + time)) / scale;
-							scale *= 2.0;
-							uv *= 2.0; // Increase detail
-					}
+		// Function for fractal effect
+		float fractalPattern(vec2 st, float time) {
+			vec2 uv = st * 1.0; // Tile the pattern
+			float scale = 1.0;
+			float result = 0.0;
 
-					return result * 0.5 + 0.5; // Normalize to [0,1]
+			for (int i = 0; i < 5; i++) { // Fractal depth
+				uv = abs(uv - 0.5) * 2.0; // Create the Sierpinski-like effect
+				result += (sin(uv.x * 10.0 + time) * sin(uv.y * 10.0 + time)) / scale;
+				scale *= 2.0;
+				uv *= 2.0; // Increase detail
 			}
 
-			// Function for line effect
-			float linePattern(vec2 st, float time) {
-					// Create a pattern that resembles contour lines
-					float value = sin(st.x * 10.0 + st.y * 10.0 + time * u_speed);
-					value = abs(fract(value) - 0.5); // Generate smooth bands
-					return value * 2.0; // Normalize to [0, 1]
+			return result * 0.5 + 0.5; // Normalize to [0,1]
+		}
+
+		// Function for line effect
+		float linePattern(vec2 st, float time) {
+			// Create a pattern that resembles contour lines
+			float value = sin(st.x * 20.0 + st.y * 20.0 + time * u_speed);
+			
+			// Add some noise for variation
+			value += noise(st * 10.0) * 0.2;
+
+			// Generate smooth contour bands
+			value = abs(fract(value) - 0.5); // Create repeating smooth bands
+			value = pow(value, 0.3); // Adjust contrast for sharper lines
+			return value;
+		}
+
+		void main() {
+			vec2 st = gl_FragCoord.xy / u_resolution.xy;
+			st -= 0.5; // Center the coordinates
+			st *= u_repeat; // Scale for pattern repetitions
+			
+			// Apply rotation
+			float angle = u_rotation;
+			float cosA = cos(angle);
+			float sinA = sin(angle);
+			st = mat2(cosA, -sinA, sinA, cosA) * st;
+
+			st += 0.5; // Restore to 0-1 range
+
+			// Base patterns
+			float wave = sin((st.x * 10.0 + u_time * u_speed) * 1.0) * 0.4
+					+ sin((st.x * 20.0 + u_time * u_speed * 0.75) * 0.5) * 0.3
+					+ sin((st.x * 5.0 + u_time * u_speed * 1.5) * 0.25) * 0.3;
+			wave = wave * 0.5 + 0.5; // Normalize to 0-1 range
+
+			float contour = abs(sin(st.x * 10.0 + u_time * u_speed) * 0.5 + 0.5);
+			
+			// Add bending to Flow
+			float flow = fract(
+				st.x * 10.0 + st.y * 10.0 + sin(st.y * u_bend) + u_time * u_speed * 0.2
+			);
+
+			// Fractal pattern for the "Fractals" mode
+			float fractal = fractalPattern(st, u_time * u_speed);
+
+			// Line pattern for the "Lines" mode
+			float lines = linePattern(st, u_time);
+
+			vec3 color = mix(u_color1, u_color2, wave); // Default to Waves
+
+			if (u_mode == 1) {
+				color = mix(u_color1, u_color2, contour); // Contour Effect
+			} else if (u_mode == 2) {
+				color = mix(u_color1, u_color2, flow); // Flowing Pattern with Bend
+			} else if (u_mode == 3) {
+				color = mix(u_color1, u_color2, fractal); // Fractal Pattern
+			} else if (u_mode == 4) {
+				color = mix(u_color1, u_color2, lines); // Line Effect
 			}
 
-			void main() {
-					vec2 st = gl_FragCoord.xy / u_resolution.xy;
-					st -= 0.5; // Center the coordinates
-					st *= u_repeat; // Scale for pattern repetitions
-					
-					// Apply rotation
-					float angle = u_rotation;
-					float cosA = cos(angle);
-					float sinA = sin(angle);
-					st = mat2(cosA, -sinA, sinA, cosA) * st;
-
-					st += 0.5; // Restore to 0-1 range
-
-					// Base patterns
-					float wave = sin((st.x * 10.0 + u_time * u_speed) * 1.0) * 0.4
-										 + sin((st.x * 20.0 + u_time * u_speed * 0.75) * 0.5) * 0.3
-										 + sin((st.x * 5.0 + u_time * u_speed * 1.5) * 0.25) * 0.3;
-					wave = wave * 0.5 + 0.5; // Normalize to 0-1 range
-
-					float contour = abs(sin(st.x * 10.0 + u_time * u_speed) * 0.5 + 0.5);
-					
-					// Add bending to Flow
-					float flow = fract(
-							st.x * 10.0 + st.y * 10.0 + sin(st.y * u_bend) + u_time * u_speed * 0.2
-					);
-
-					// Fractal pattern for the new mode
-					float fractal = fractalPattern(st, u_time * u_speed);
-
-					// Line pattern for the new mode
-					float lines = linePattern(st, u_time);
-
-					vec3 color = mix(u_color1, u_color2, wave); // Default to Waves
-
-					if (u_mode == 1) {
-							color = mix(u_color1, u_color2, contour); // Contour Effect
-					} else if (u_mode == 2) {
-							color = mix(u_color1, u_color2, flow); // Flowing Pattern with Bend
-					} else if (u_mode == 3) {
-							color = mix(u_color1, u_color2, fractal); // Fractal Pattern
-					} else if (u_mode == 4) {
-							color = mix(u_color1, u_color2, lines); // Line Effect
-					}
-
-					gl_FragColor = vec4(color, 1.0);
-			}
+			gl_FragColor = vec4(color, 1.0);
+		}
 	`
 }
 
