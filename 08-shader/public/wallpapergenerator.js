@@ -106,7 +106,7 @@ function fragmentShader() {
 
 			// Function for fractal effect
 			float fractalPattern(vec2 st, float time) {
-					vec2 uv = st * 10.0; // Tile the pattern
+					vec2 uv = st * 1.0; // Tile the pattern
 					float scale = 1.0;
 					float result = 0.0;
 
