@@ -20,9 +20,9 @@ function init() {
 		0.1,
 		1000
 	)
-	camera.position.set(0, 0, 5) // Position the camera further away for rotation perspective
+	camera.position.set(0, 0, 5)
 
-	renderer = new THREE.WebGLRenderer()
+	renderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true })
 	renderer.setSize(window.innerWidth, window.innerHeight)
 	document.body.appendChild(renderer.domElement)
 
@@ -36,6 +36,9 @@ function init() {
 		u_color2: { value: new THREE.Color(0xc3073f) },
 		u_mode: { value: 0 }, // Shader mode selector
 		u_bend: { value: 0 }, // Bending strength for flow mode
+		u_speed: { value: 1.0 }, // Speed multiplier
+		u_rotation: { value: 0.0 }, // Rotation of the shader
+		u_repeat: { value: 1.0 }, // Number of pattern repetitions
 	}
 
 	// Shader Material
@@ -50,10 +53,6 @@ function init() {
 	mesh = new THREE.Mesh(geometry, shaderMaterial)
 	scene.add(mesh)
 
-	// Add a grid helper for rotation feedback
-	const grid = new THREE.GridHelper(10, 10)
-	scene.add(grid)
-
 	// GUI controls
 	const gui = new GUI()
 	const folderColors = gui.addFolder('Colors')
@@ -64,7 +63,10 @@ function init() {
 	gui
 		.add(uniforms.u_mode, 'value', { Waves: 0, Contours: 1, Flow: 2 })
 		.name('Mode')
-	gui.add(uniforms.u_bend, 'value', 0.0, 10.0, 0.5).name('Bend Strength')
+	gui.add(uniforms.u_bend, 'value', 0.0, 10.0, 0.1).name('Bend Strength')
+	gui.add(uniforms.u_speed, 'value', 0.1, 5.0, 0.1).name('Speed')
+	gui.add(uniforms.u_rotation, 'value', 0.0, Math.PI * 2, 0.01).name('Rotation')
+	gui.add(uniforms.u_repeat, 'value', 1.0, 10.0, 0.1).name('Repetitions')
 	gui.add({ saveImage }, 'saveImage').name('Save Image')
 
 	// OrbitControls for rotation
@@ -92,22 +94,34 @@ function fragmentShader() {
         uniform vec3 u_color2;
         uniform int u_mode;
         uniform float u_bend;
+        uniform float u_speed;
+        uniform float u_rotation;
+        uniform float u_repeat;
 
         void main() {
             vec2 st = gl_FragCoord.xy / u_resolution.xy;
+            st -= 0.5; // Center the coordinates
+            st *= u_repeat; // Scale for pattern repetitions
+            
+            // Apply rotation
+            float angle = u_rotation;
+            float cosA = cos(angle);
+            float sinA = sin(angle);
+            st = mat2(cosA, -sinA, sinA, cosA) * st;
+
+            st += 0.5; // Restore to 0-1 range
 
             // Base patterns
-            // Enhanced wave with multiple frequencies and phases for realism
-            float wave = sin((st.x * 10.0 + u_time * 2.0) * 1.0) * 0.4
-                       + sin((st.x * 20.0 + u_time * 1.5) * 0.5) * 0.3
-                       + sin((st.x * 5.0 + u_time * 3.0) * 0.25) * 0.3;
+            float wave = sin((st.x * 10.0 + u_time * u_speed) * 1.0) * 0.4
+                       + sin((st.x * 20.0 + u_time * u_speed * 0.75) * 0.5) * 0.3
+                       + sin((st.x * 5.0 + u_time * u_speed * 1.5) * 0.25) * 0.3;
             wave = wave * 0.5 + 0.5; // Normalize to 0-1 range
 
-            float contour = abs(sin(st.x * 10.0 + u_time) * 0.5 + 0.5);
+            float contour = abs(sin(st.x * 10.0 + u_time * u_speed) * 0.5 + 0.5);
             
             // Add bending to Flow
             float flow = fract(
-                st.x * 10.0 + st.y * 10.0 + sin(st.y * u_bend) + u_time * 0.2
+                st.x * 10.0 + st.y * 10.0 + sin(st.y * u_bend) + u_time * u_speed * 0.2
             );
 
             vec3 color = mix(u_color1, u_color2, wave); // Default to Waves
@@ -138,22 +152,17 @@ function onWindowResize() {
 }
 
 function saveImage() {
-	const canvas = renderer.domElement // Get the WebGLRenderer's canvas
+	const canvas = renderer.domElement
 	if (!canvas) {
 		console.error('No canvas found to save the image.')
 		return
 	}
 
 	try {
-		// Force a render to ensure the canvas has the latest frame
 		renderer.render(scene, camera)
-
-		// Convert the canvas content to a data URL (PNG format)
 		const dataURL = canvas.toDataURL('image/png')
-
-		// Create a download link and trigger a click event
 		const link = document.createElement('a')
-		link.download = `wallpaper_${Date.now()}.png` // Unique file name
+		link.download = `wallpaper_${Date.now()}.png`
 		link.href = dataURL
 		link.click()
 	} catch (error) {
