@@ -47,14 +47,46 @@ function initGraphics() {
 	controls.target.set(0, 2, 0)
 	controls.update()
 
+	// Ambient light
 	const ambientLight = new THREE.AmbientLight(0x404040)
 	scene.add(ambientLight)
 
-	const light = new THREE.DirectionalLight(0xffffff, 1.5)
-	light.position.set(10, 20, 10)
-	light.castShadow = true
-	scene.add(light)
+	// Directional lights (Sun and Moon)
+	const sunLight = new THREE.DirectionalLight(0xffd27f, 1.5) // Warm light for the sun
+	sunLight.position.set(50, 100, 50)
+	sunLight.castShadow = true
+	scene.add(sunLight)
 
+	const moonLight = new THREE.DirectionalLight(0x809fff, 0.5) // Cool light for the moon
+	moonLight.position.set(-50, -100, -50)
+	scene.add(moonLight)
+
+	// Internal lights for the caseta
+	const casetaLight1 = new THREE.PointLight(0xffffff, 1, 15)
+	casetaLight1.position.set(0, 8, -5)
+	scene.add(casetaLight1)
+
+	const casetaLight2 = new THREE.PointLight(0xffffff, 1, 15)
+	casetaLight2.position.set(0, 8, -10)
+	scene.add(casetaLight2)
+
+	// Decorative RGB lights
+	const rgbColors = [0xff0000, 0x00ff00, 0x0000ff] // Red, Green, Blue
+	const bulbCount = 10
+	const bulbRadius = 15
+
+	for (let i = 0; i < bulbCount; i++) {
+		const angle = (i / bulbCount) * Math.PI * 2
+		const bulbLight = new THREE.PointLight(rgbColors[i % 3], 1, 5)
+		bulbLight.position.set(
+			Math.cos(angle) * bulbRadius,
+			10,
+			Math.sin(angle) * bulbRadius
+		)
+		scene.add(bulbLight)
+	}
+
+	// Add score display
 	scoreText = document.createElement('div')
 	scoreText.style.position = 'absolute'
 	scoreText.style.top = '10px'
@@ -64,7 +96,32 @@ function initGraphics() {
 	scoreText.innerHTML = `Score: ${score}`
 	document.body.appendChild(scoreText)
 
+	// Window resize
 	window.addEventListener('resize', onWindowResize)
+
+	// Animate the sun and moon
+	function rotateLights() {
+		const time = Date.now() * 0.0005
+		const radius = 100
+
+		// Rotate sun
+		sunLight.position.set(
+			Math.cos(time) * radius,
+			Math.sin(time) * radius,
+			50
+		)
+
+		// Rotate moon opposite to the sun
+		moonLight.position.set(
+			-Math.cos(time) * radius,
+			-Math.sin(time) * radius,
+			-50
+		)
+
+		requestAnimationFrame(rotateLights)
+	}
+
+	rotateLights()
 }
 
 function initPhysics() {
