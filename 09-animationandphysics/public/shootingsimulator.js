@@ -31,7 +31,7 @@ function initGraphics() {
 		0.2,
 		2000
 	)
-	camera.position.set(0, 3, 13)
+	camera.position.set(5, 5, 25)
 
 	scene = new THREE.Scene()
 	scene.background = new THREE.Color(0x000022) // Fondo oscuro para simular la noche
