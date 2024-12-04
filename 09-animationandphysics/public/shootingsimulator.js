@@ -165,17 +165,44 @@ function createBooth() {
 
 function createTargets() {
 	const targetMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 })
+	const repisaMaterial = new THREE.MeshPhongMaterial({ color: 0x8b4513 })
 	const rows = 2
 	const columns = 5
 	const spacing = 3
 	const startX = -(columns / 2) * spacing
-	const startY = 2
+	const startY = 3 // Ajuste de altura para que los objetivos estén sobre la repisa
+	const repisaHeight = 0.5 // Altura de la repisa
+	const repisaDepth = 1 // Profundidad de la repisa
 
+	// Crear repisa para los objetivos
+	for (let i = 0; i < rows; i++) {
+		const pos = new THREE.Vector3(-0.5, startY + i * 4 - repisaHeight / 2, -8) // Ajustar posición para que soporte las barras
+		const quat = new THREE.Quaternion(0, 0, 0, 1)
+		createBoxWithPhysics(
+			columns * spacing + 10, // Ancho de la repisa
+			repisaHeight,
+			repisaDepth,
+			0,
+			pos,
+			quat,
+			repisaMaterial
+		)
+	}
+
+	// Crear objetivos sobre la repisa
 	for (let i = 0; i < rows; i++) {
 		for (let j = 0; j < columns; j++) {
-			const pos = new THREE.Vector3(startX + j * spacing, startY + i * 4, -8)
+			const pos = new THREE.Vector3(startX + j * spacing, startY + i * 4, -8) // Posición ajustada para estar sobre la repisa
 			const quat = new THREE.Quaternion(0, 0, 0, 1)
-			const target = createBoxWithPhysics(1, 2, 1, 5, pos, quat, targetMaterial)
+			const target = createBoxWithPhysics(
+				1, // Ancho del objetivo
+				2, // Altura del objetivo
+				1, // Profundidad del objetivo
+				5,
+				pos,
+				quat,
+				targetMaterial
+			)
 			target.castShadow = true
 
 			target.userData.onCollide = () => {
