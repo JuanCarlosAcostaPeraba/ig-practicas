@@ -134,12 +134,12 @@ function initGraphics() {
 	scene.add(casetaLight2)
 
 	const cornerLight1 = new THREE.PointLight(0xffffff, 1.2, 12)
-	cornerLight1.position.set(-12, 5, -10) // Left-back corner
+	cornerLight1.position.set(-12, 5, -10)
 	cornerLight1.castShadow = true
 	scene.add(cornerLight1)
 
 	const cornerLight2 = new THREE.PointLight(0xffffff, 1.2, 12)
-	cornerLight2.position.set(12, 5, -10) // Right-back corner
+	cornerLight2.position.set(12, 5, -10)
 	cornerLight2.castShadow = true
 	scene.add(cornerLight2)
 
