@@ -5,6 +5,7 @@ let camera, scene, renderer, controls
 let physicsWorld,
 	rigidBodies = []
 let transformAux1, clock
+let isPlaying = false
 
 const gravityConstant = 9.8
 const mouseCoords = new THREE.Vector2()
@@ -22,6 +23,73 @@ function init() {
 	createBooth()
 	createTargets()
 	initInput()
+	createPlayButton()
+}
+
+function createPlayButton() {
+	const button = document.createElement('button')
+	button.innerText = 'Play'
+	button.style.position = 'absolute'
+	button.style.bottom = '20px'
+	button.style.left = '50%'
+	button.style.transform = 'translateX(-50%)'
+	button.style.padding = '10px 20px'
+	button.style.fontSize = '18px'
+	button.style.backgroundColor = '#4CAF50'
+	button.style.color = 'white'
+	button.style.border = 'none'
+	button.style.borderRadius = '5px'
+	button.style.cursor = 'pointer'
+	button.addEventListener('click', () => {
+		button.style.display = 'none'
+		startGame()
+	})
+	document.body.appendChild(button)
+}
+
+function startGame() {
+	isPlaying = true
+	moveCameraToGameView()
+}
+
+function moveCameraToGameView() {
+	const targetPosition = { x: 0, y: 5, z: 15 }
+	const duration = 100
+	const initialPosition = {
+		x: camera.position.x,
+		y: camera.position.y,
+		z: camera.position.z,
+	}
+
+	let elapsedTime = 0
+	function animateCamera() {
+		if (elapsedTime < duration) {
+			elapsedTime += clock.getDelta() * 1000
+			const t = Math.min(elapsedTime / duration, 1)
+
+			camera.position.x = THREE.MathUtils.lerp(
+				initialPosition.x,
+				targetPosition.x,
+				t
+			)
+			camera.position.y = THREE.MathUtils.lerp(
+				initialPosition.y,
+				targetPosition.y,
+				t
+			)
+			camera.position.z = THREE.MathUtils.lerp(
+				initialPosition.z,
+				targetPosition.z,
+				t
+			)
+
+			requestAnimationFrame(animateCamera)
+		} else {
+			camera.lookAt(0, 2, 0)
+		}
+	}
+
+	animateCamera()
 }
 
 function initGraphics() {
@@ -58,7 +126,6 @@ function initGraphics() {
 	moonLight.shadow.camera.far = 300
 	scene.add(moonLight)
 
-	// Internal lights for the caseta
 	const casetaLight1 = new THREE.PointLight(0xffffff, 1.5, 15)
 	casetaLight1.position.set(0, 8, -5)
 	casetaLight1.castShadow = true
@@ -151,7 +218,6 @@ function createBooth() {
 	const boothMaterial = new THREE.MeshPhongMaterial({ color: 0x8b4513 })
 	const sideMaterial = new THREE.MeshPhongMaterial({ color: 0xffd700 })
 
-	// Walls
 	const wallThickness = 1
 	const boothWidth = 30
 	const boothHeight = 10
@@ -176,7 +242,6 @@ function createBooth() {
 		boothMaterial
 	)
 
-	// Back wall
 	createBoxWithPhysics(
 		boothWidth,
 		boothHeight,
@@ -187,7 +252,6 @@ function createBooth() {
 		boothMaterial
 	)
 
-	// Roof
 	createBoxWithPhysics(
 		boothWidth,
 		wallThickness,
@@ -222,7 +286,6 @@ function createTargets() {
 	const repisaHeight = 0.5
 	const repisaDepth = 1
 
-	// Crear repisa para los objetivos
 	for (let i = 0; i < rows; i++) {
 		const pos = new THREE.Vector3(-0.5, startY + i * 4 - repisaHeight / 2, -8)
 		const quat = new THREE.Quaternion(0, 0, 0, 1)
@@ -237,7 +300,6 @@ function createTargets() {
 		)
 	}
 
-	// Crear objetivos sobre la repisa
 	for (let i = 0; i < rows; i++) {
 		for (let j = 0; j < columns; j++) {
 			const pos = new THREE.Vector3(startX + j * spacing, startY + i * 4, -8)
@@ -289,6 +351,8 @@ function createBoxWithPhysics(sx, sy, sz, mass, pos, quat, material) {
 
 function initInput() {
 	window.addEventListener('pointerdown', (event) => {
+		if (!isPlaying) return
+
 		mouseCoords.set(
 			(event.clientX / window.innerWidth) * 2 - 1,
 			-(event.clientY / window.innerHeight) * 2 + 1
@@ -314,7 +378,7 @@ function initInput() {
 		const ballBody = createRigidBody(ball, ballShape, 20, pos, quat)
 
 		pos.copy(raycaster.ray.direction)
-		pos.multiplyScalar(20)
+		pos.multiplyScalar(28)
 		ballBody.setLinearVelocity(new Ammo.btVector3(pos.x, pos.y, pos.z))
 	})
 }
