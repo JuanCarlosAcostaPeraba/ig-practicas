@@ -25,6 +25,24 @@ function init() {
 	initInput()
 	createPlayButton()
 	addCrosshair()
+	initMusic()
+}
+
+function initMusic() {
+  audioListener = new THREE.AudioListener();
+  camera.add(audioListener);
+
+  const audioLoader = new THREE.AudioLoader();
+  audioLoader.load('https://cdn.glitch.global/c763aa94-479e-4270-b7d6-3ec2a6e57154/ambient_18.mp3?v=1733353608131', function(buffer) {
+    backgroundMusic = new THREE.Audio(audioListener);
+    backgroundMusic.setBuffer(buffer);
+    backgroundMusic.setLoop(true);
+    backgroundMusic.setVolume(0.5);
+    backgroundMusic.play();
+    console.log("Música de fondo cargada y reproducida");
+  }, undefined, function (error) {
+    console.error('Error cargando música:', error);
+  });
 }
 
 function createPlayButton() {
