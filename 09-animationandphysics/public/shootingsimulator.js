@@ -5,6 +5,7 @@ let camera, scene, renderer, controls;
 let physicsWorld, rigidBodies = [];
 let transformAux1, clock;
 let score = 0;
+let scoreText;
 
 const gravityConstant = 9.8;
 const mouseCoords = new THREE.Vector2();
@@ -19,6 +20,7 @@ function init() {
   initGraphics();
   initPhysics();
   createGround();
+  createBooth();
   createTargets();
   initInput();
 }
@@ -51,6 +53,15 @@ function initGraphics() {
   light.position.set(10, 20, 10);
   light.castShadow = true;
   scene.add(light);
+
+  scoreText = document.createElement("div");
+  scoreText.style.position = "absolute";
+  scoreText.style.top = "10px";
+  scoreText.style.left = "10px";
+  scoreText.style.color = "white";
+  scoreText.style.fontSize = "20px";
+  scoreText.innerHTML = `Score: ${score}`;
+  document.body.appendChild(scoreText);
 
   window.addEventListener("resize", onWindowResize);
 }
@@ -87,25 +98,83 @@ function createGround() {
   ground.receiveShadow = true;
 }
 
+function createBooth() {
+  const boothMaterial = new THREE.MeshPhongMaterial({ color: 0x8b4513 });
+  const sideMaterial = new THREE.MeshPhongMaterial({ color: 0xffd700 });
+
+  // Walls
+  const wallThickness = 1;
+  const boothWidth = 30;
+  const boothHeight = 10;
+  const boothDepth = 10;
+
+  const leftWall = createBoxWithPhysics(
+    wallThickness,
+    boothHeight,
+    boothDepth,
+    0,
+    new THREE.Vector3(-boothWidth / 2, boothHeight / 2, -5),
+    new THREE.Quaternion(0, 0, 0, 1),
+    boothMaterial
+  );
+  const rightWall = createBoxWithPhysics(
+    wallThickness,
+    boothHeight,
+    boothDepth,
+    0,
+    new THREE.Vector3(boothWidth / 2, boothHeight / 2, -5),
+    new THREE.Quaternion(0, 0, 0, 1),
+    boothMaterial
+  );
+
+  // Back wall
+  createBoxWithPhysics(
+    boothWidth,
+    boothHeight,
+    wallThickness,
+    0,
+    new THREE.Vector3(0, boothHeight / 2, -boothDepth),
+    new THREE.Quaternion(0, 0, 0, 1),
+    boothMaterial
+  );
+
+  // Roof
+  createBoxWithPhysics(
+    boothWidth,
+    wallThickness,
+    boothDepth,
+    0,
+    new THREE.Vector3(0, boothHeight, -boothDepth / 2),
+    new THREE.Quaternion(0, 0, 0, 1),
+    sideMaterial
+  );
+}
+
 function createTargets() {
   const targetMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
-  const numTargets = 10;
-  const spacing = 4;
+  const rows = 2;
+  const columns = 5;
+  const spacing = 3;
+  const startX = -(columns / 2) * spacing;
+  const startY = 2;
 
-  for (let i = 0; i < numTargets; i++) {
-    const pos = new THREE.Vector3(
-      (i - numTargets / 2) * spacing,
-      2,
-      -10
-    );
-    const quat = new THREE.Quaternion(0, 0, 0, 1);
-    const target = createBoxWithPhysics(1, 4, 1, 5, pos, quat, targetMaterial);
-    target.castShadow = true;
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < columns; j++) {
+      const pos = new THREE.Vector3(
+        startX + j * spacing,
+        startY + i * 4,
+        -8
+      );
+      const quat = new THREE.Quaternion(0, 0, 0, 1);
+      const target = createBoxWithPhysics(1, 2, 1, 5, pos, quat, targetMaterial);
+      target.castShadow = true;
 
-    target.userData.onCollide = () => {
-      score++;
-      console.log(`Target hit! Current score: ${score}`);
-    };
+      target.userData.onCollide = () => {
+        score++;
+        scoreText.innerHTML = `Score: ${score}`;
+        console.log(`Target hit! Current score: ${score}`);
+      };
+    }
   }
 }
 
