@@ -34,24 +34,22 @@ function initGraphics() {
 	camera.position.set(5, 5, 25)
 
 	scene = new THREE.Scene()
-	scene.background = new THREE.Color(0x000022) // Fondo oscuro para simular la noche
+	scene.background = new THREE.Color(0x000022)
 
 	renderer = new THREE.WebGLRenderer()
 	renderer.setSize(window.innerWidth, window.innerHeight)
 	renderer.shadowMap.enabled = true
-	renderer.shadowMap.type = THREE.PCFSoftShadowMap // Mejora la calidad de las sombras
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap
 	document.body.appendChild(renderer.domElement)
 
 	controls = new OrbitControls(camera, renderer.domElement)
 	controls.target.set(0, 2, 0)
 	controls.update()
 
-	// Ambient light (muy tenue para mantener la sensación de noche)
 	const ambientLight = new THREE.AmbientLight(0x202020)
 	scene.add(ambientLight)
 
-	// Moonlight (única luz direccional activa)
-	const moonLight = new THREE.DirectionalLight(0x809fff, 0.8) // Intensidad ajustada para noche
+	const moonLight = new THREE.DirectionalLight(0x809fff, 0.8)
 	moonLight.position.set(-50, 100, -50)
 	moonLight.castShadow = true
 	moonLight.shadow.mapSize.width = 2048
@@ -79,9 +77,9 @@ function initGraphics() {
 }
 
 function addDecorativeLights() {
-	const rgbColors = [0xff0000, 0x00ff00, 0x0000ff] // Red, Green, Blue
-	const bulbSpacing = 2 // Espaciado entre las bombillas
-	const bulbRadius = 0.2 // Tamaño de las bombillas
+	const rgbColors = [0xff0000, 0x00ff00, 0x0000ff]
+	const bulbSpacing = 2
+	const bulbRadius = 0.2
 
 	// Top edge of the frame
 	for (let x = -15; x <= 15; x += bulbSpacing) {
@@ -101,7 +99,7 @@ function addDecorativeLights() {
 
 function addBulb(position, rgbColors) {
 	const color = rgbColors[Math.floor(Math.random() * rgbColors.length)]
-	const bulbLight = new THREE.PointLight(color, 2, 10) // Increased intensity
+	const bulbLight = new THREE.PointLight(color, 2, 10)
 	bulbLight.position.copy(position)
 	scene.add(bulbLight)
 
@@ -216,16 +214,16 @@ function createTargets() {
 	const columns = 5
 	const spacing = 3
 	const startX = -(columns / 2) * spacing
-	const startY = 3 // Ajuste de altura para que los objetivos estén sobre la repisa
-	const repisaHeight = 0.5 // Altura de la repisa
-	const repisaDepth = 1 // Profundidad de la repisa
+	const startY = 3
+	const repisaHeight = 0.5
+	const repisaDepth = 1
 
 	// Crear repisa para los objetivos
 	for (let i = 0; i < rows; i++) {
-		const pos = new THREE.Vector3(-0.5, startY + i * 4 - repisaHeight / 2, -8) // Ajustar posición para que soporte las barras
+		const pos = new THREE.Vector3(-0.5, startY + i * 4 - repisaHeight / 2, -8)
 		const quat = new THREE.Quaternion(0, 0, 0, 1)
 		createBoxWithPhysics(
-			columns * spacing + 10, // Ancho de la repisa
+			columns * spacing + 10,
 			repisaHeight,
 			repisaDepth,
 			0,
@@ -238,12 +236,12 @@ function createTargets() {
 	// Crear objetivos sobre la repisa
 	for (let i = 0; i < rows; i++) {
 		for (let j = 0; j < columns; j++) {
-			const pos = new THREE.Vector3(startX + j * spacing, startY + i * 4, -8) // Posición ajustada para estar sobre la repisa
+			const pos = new THREE.Vector3(startX + j * spacing, startY + i * 4, -8)
 			const quat = new THREE.Quaternion(0, 0, 0, 1)
 			const target = createBoxWithPhysics(
-				1, // Ancho del objetivo
-				2, // Altura del objetivo
-				1, // Profundidad del objetivo
+				1,
+				2,
+				1,
 				5,
 				pos,
 				quat,
