@@ -1,11 +1,11 @@
 import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
-let camera, scene, renderer, controls
+let camera, scene, renderer
 let physicsWorld,
 	rigidBodies = []
 let transformAux1, clock
 let isPlaying = false
+let cameraRotation = { yaw: 0, pitch: 0 }
 
 const gravityConstant = 9.8
 const mouseCoords = new THREE.Vector2()
@@ -24,6 +24,7 @@ function init() {
 	createTargets()
 	initInput()
 	createPlayButton()
+	addCrosshair()
 }
 
 function createPlayButton() {
@@ -99,7 +100,7 @@ function initGraphics() {
 		0.2,
 		2000
 	)
-	camera.position.set(5, 5, 25)
+	camera.position.set(0, 5, 25)
 
 	scene = new THREE.Scene()
 	scene.background = new THREE.Color(0x000022)
@@ -109,10 +110,6 @@ function initGraphics() {
 	renderer.shadowMap.enabled = true
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap
 	document.body.appendChild(renderer.domElement)
-
-	controls = new OrbitControls(camera, renderer.domElement)
-	controls.target.set(0, 2, 0)
-	controls.update()
 
 	const ambientLight = new THREE.AmbientLight(0x202020)
 	scene.add(ambientLight)
@@ -147,14 +144,48 @@ function initGraphics() {
 	scene.add(cornerLight2)
 
 	addDecorativeLights()
-
+	initMouseControls()
 	window.addEventListener('resize', onWindowResize)
+}
+
+function addCrosshair() {
+	const crosshair = document.createElement('div')
+	crosshair.style.position = 'absolute'
+	crosshair.style.width = '5px'
+	crosshair.style.height = '5px'
+	crosshair.style.backgroundColor = 'white'
+	crosshair.style.borderRadius = '50%'
+	crosshair.style.top = '50%'
+	crosshair.style.left = '50%'
+	crosshair.style.transform = 'translate(-50%, -50%)'
+	crosshair.style.zIndex = '1000'
+	document.body.appendChild(crosshair)
+}
+
+function initMouseControls() {
+	document.body.addEventListener('click', () => {
+		document.body.requestPointerLock()
+	})
+
+	document.addEventListener('mousemove', (event) => {
+		if (document.pointerLockElement === document.body) {
+			const sensitivity = 0.002
+			cameraRotation.yaw -= event.movementX * sensitivity
+			cameraRotation.pitch -= event.movementY * sensitivity
+
+			cameraRotation.pitch = Math.max(
+				-Math.PI / 2,
+				Math.min(Math.PI / 2, cameraRotation.pitch)
+			)
+
+			camera.rotation.set(cameraRotation.pitch, cameraRotation.yaw, 0)
+		}
+	})
 }
 
 function addDecorativeLights() {
 	const rgbColors = [0xff0000, 0x00ff00, 0x0000ff]
 	const bulbSpacing = 2
-	const bulbRadius = 0.2
 
 	for (let x = -15; x <= 15; x += bulbSpacing) {
 		addBulb(new THREE.Vector3(x, 10, 0), rgbColors)
@@ -353,11 +384,8 @@ function initInput() {
 	window.addEventListener('pointerdown', (event) => {
 		if (!isPlaying) return
 
-		mouseCoords.set(
-			(event.clientX / window.innerWidth) * 2 - 1,
-			-(event.clientY / window.innerHeight) * 2 + 1
-		)
-		raycaster.setFromCamera(mouseCoords, camera)
+		const direction = new THREE.Vector3()
+		camera.getWorldDirection(direction)
 
 		const ballMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff })
 		const ballRadius = 0.5
@@ -371,15 +399,15 @@ function initInput() {
 		ballShape.setMargin(0.05)
 
 		const pos = new THREE.Vector3()
-		pos.copy(raycaster.ray.direction)
-		pos.add(raycaster.ray.origin)
+		pos.copy(camera.position)
 
 		const quat = new THREE.Quaternion(0, 0, 0, 1)
 		const ballBody = createRigidBody(ball, ballShape, 20, pos, quat)
 
-		pos.copy(raycaster.ray.direction)
-		pos.multiplyScalar(28)
-		ballBody.setLinearVelocity(new Ammo.btVector3(pos.x, pos.y, pos.z))
+		direction.multiplyScalar(25) // Ball speed
+		ballBody.setLinearVelocity(
+			new Ammo.btVector3(direction.x, direction.y, direction.z)
+		)
 	})
 }
 
