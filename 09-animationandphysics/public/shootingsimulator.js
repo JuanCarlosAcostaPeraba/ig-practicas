@@ -5,8 +5,6 @@ let camera, scene, renderer, controls
 let physicsWorld,
 	rigidBodies = []
 let transformAux1, clock
-let score = 0
-let scoreText
 
 const gravityConstant = 9.8
 const mouseCoords = new THREE.Vector2()
@@ -36,92 +34,83 @@ function initGraphics() {
 	camera.position.set(0, 3, 13)
 
 	scene = new THREE.Scene()
-	scene.background = new THREE.Color(0x87ceeb)
+	scene.background = new THREE.Color(0x000022) // Fondo oscuro para simular la noche
 
 	renderer = new THREE.WebGLRenderer()
 	renderer.setSize(window.innerWidth, window.innerHeight)
 	renderer.shadowMap.enabled = true
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap // Mejora la calidad de las sombras
 	document.body.appendChild(renderer.domElement)
 
 	controls = new OrbitControls(camera, renderer.domElement)
 	controls.target.set(0, 2, 0)
 	controls.update()
 
-	// Ambient light
-	const ambientLight = new THREE.AmbientLight(0x404040)
+	// Ambient light (muy tenue para mantener la sensación de noche)
+	const ambientLight = new THREE.AmbientLight(0x202020)
 	scene.add(ambientLight)
 
-	// Directional lights (Sun and Moon)
-	const sunLight = new THREE.DirectionalLight(0xffd27f, 1.5) // Warm light for the sun
-	sunLight.position.set(50, 100, 50)
-	sunLight.castShadow = true
-	scene.add(sunLight)
-
-	const moonLight = new THREE.DirectionalLight(0x809fff, 0.5) // Cool light for the moon
-	moonLight.position.set(-50, -100, -50)
+	// Moonlight (única luz direccional activa)
+	const moonLight = new THREE.DirectionalLight(0x809fff, 0.8) // Intensidad ajustada para noche
+	moonLight.position.set(-50, 100, -50)
+	moonLight.castShadow = true
+	moonLight.shadow.mapSize.width = 2048
+	moonLight.shadow.mapSize.height = 2048
+	moonLight.shadow.camera.near = 0.5
+	moonLight.shadow.camera.far = 300
 	scene.add(moonLight)
 
 	// Internal lights for the caseta
-	const casetaLight1 = new THREE.PointLight(0xffffff, 1, 15)
+	const casetaLight1 = new THREE.PointLight(0xffffff, 1.5, 15)
 	casetaLight1.position.set(0, 8, -5)
+	casetaLight1.castShadow = true
 	scene.add(casetaLight1)
 
-	const casetaLight2 = new THREE.PointLight(0xffffff, 1, 15)
+	const casetaLight2 = new THREE.PointLight(0xffffff, 1.5, 15)
 	casetaLight2.position.set(0, 8, -10)
+	casetaLight2.castShadow = true
 	scene.add(casetaLight2)
 
-	// Decorative RGB lights
-	const rgbColors = [0xff0000, 0x00ff00, 0x0000ff] // Red, Green, Blue
-	const bulbCount = 10
-	const bulbRadius = 15
-
-	for (let i = 0; i < bulbCount; i++) {
-		const angle = (i / bulbCount) * Math.PI * 2
-		const bulbLight = new THREE.PointLight(rgbColors[i % 3], 1, 5)
-		bulbLight.position.set(
-			Math.cos(angle) * bulbRadius,
-			10,
-			Math.sin(angle) * bulbRadius
-		)
-		scene.add(bulbLight)
-	}
-
-	// Add score display
-	scoreText = document.createElement('div')
-	scoreText.style.position = 'absolute'
-	scoreText.style.top = '10px'
-	scoreText.style.left = '10px'
-	scoreText.style.color = 'white'
-	scoreText.style.fontSize = '20px'
-	scoreText.innerHTML = `Score: ${score}`
-	document.body.appendChild(scoreText)
+	// Decorative RGB lights with physical bulb effect
+	addDecorativeLights()
 
 	// Window resize
 	window.addEventListener('resize', onWindowResize)
+}
 
-	// Animate the sun and moon
-	function rotateLights() {
-		const time = Date.now() * 0.0005
-		const radius = 100
+function addDecorativeLights() {
+	const rgbColors = [0xff0000, 0x00ff00, 0x0000ff] // Red, Green, Blue
+	const bulbSpacing = 2 // Espaciado entre las bombillas
+	const bulbRadius = 0.2 // Tamaño de las bombillas
 
-		// Rotate sun
-		sunLight.position.set(
-			Math.cos(time) * radius,
-			Math.sin(time) * radius,
-			50
-		)
-
-		// Rotate moon opposite to the sun
-		moonLight.position.set(
-			-Math.cos(time) * radius,
-			-Math.sin(time) * radius,
-			-50
-		)
-
-		requestAnimationFrame(rotateLights)
+	// Top edge of the frame
+	for (let x = -15; x <= 15; x += bulbSpacing) {
+		addBulb(new THREE.Vector3(x, 10, 0), rgbColors)
 	}
 
-	rotateLights()
+	// Left edge of the frame
+	for (let y = 2; y <= 10; y += bulbSpacing) {
+		addBulb(new THREE.Vector3(-15, y, 0), rgbColors)
+	}
+
+	// Right edge of the frame
+	for (let y = 2; y <= 10; y += bulbSpacing) {
+		addBulb(new THREE.Vector3(15, y, 0), rgbColors)
+	}
+}
+
+function addBulb(position, rgbColors) {
+	const color = rgbColors[Math.floor(Math.random() * rgbColors.length)]
+	const bulbLight = new THREE.PointLight(color, 2, 10) // Increased intensity
+	bulbLight.position.copy(position)
+	scene.add(bulbLight)
+
+	// Add small sphere to represent the bulb
+	const bulbGeometry = new THREE.SphereGeometry(0.2, 8, 8)
+	const bulbMaterial = new THREE.MeshBasicMaterial({ color })
+	const bulbSphere = new THREE.Mesh(bulbGeometry, bulbMaterial)
+	bulbSphere.position.copy(position)
+	scene.add(bulbSphere)
 }
 
 function initPhysics() {
@@ -261,12 +250,6 @@ function createTargets() {
 				targetMaterial
 			)
 			target.castShadow = true
-
-			target.userData.onCollide = () => {
-				score++
-				scoreText.innerHTML = `Score: ${score}`
-				console.log(`Target hit! Current score: ${score}`)
-			}
 		}
 	}
 }
