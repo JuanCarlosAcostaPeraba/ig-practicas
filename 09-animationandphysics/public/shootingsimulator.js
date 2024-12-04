@@ -69,10 +69,18 @@ function initGraphics() {
 	casetaLight2.castShadow = true
 	scene.add(casetaLight2)
 
-	// Decorative RGB lights with physical bulb effect
+	const cornerLight1 = new THREE.PointLight(0xffffff, 1.2, 12)
+	cornerLight1.position.set(-12, 5, -10) // Left-back corner
+	cornerLight1.castShadow = true
+	scene.add(cornerLight1)
+
+	const cornerLight2 = new THREE.PointLight(0xffffff, 1.2, 12)
+	cornerLight2.position.set(12, 5, -10) // Right-back corner
+	cornerLight2.castShadow = true
+	scene.add(cornerLight2)
+
 	addDecorativeLights()
 
-	// Window resize
 	window.addEventListener('resize', onWindowResize)
 }
 
@@ -81,17 +89,14 @@ function addDecorativeLights() {
 	const bulbSpacing = 2
 	const bulbRadius = 0.2
 
-	// Top edge of the frame
 	for (let x = -15; x <= 15; x += bulbSpacing) {
 		addBulb(new THREE.Vector3(x, 10, 0), rgbColors)
 	}
 
-	// Left edge of the frame
 	for (let y = 2; y <= 10; y += bulbSpacing) {
 		addBulb(new THREE.Vector3(-15, y, 0), rgbColors)
 	}
 
-	// Right edge of the frame
 	for (let y = 2; y <= 10; y += bulbSpacing) {
 		addBulb(new THREE.Vector3(15, y, 0), rgbColors)
 	}
@@ -103,7 +108,6 @@ function addBulb(position, rgbColors) {
 	bulbLight.position.copy(position)
 	scene.add(bulbLight)
 
-	// Add small sphere to represent the bulb
 	const bulbGeometry = new THREE.SphereGeometry(0.2, 8, 8)
 	const bulbMaterial = new THREE.MeshBasicMaterial({ color })
 	const bulbSphere = new THREE.Mesh(bulbGeometry, bulbMaterial)
@@ -211,7 +215,7 @@ function createTargets() {
 	const targetMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 })
 	const repisaMaterial = new THREE.MeshPhongMaterial({ color: 0x8b4513 })
 	const rows = 2
-	const columns = 5
+	const columns = 6
 	const spacing = 3
 	const startX = -(columns / 2) * spacing
 	const startY = 3
@@ -238,15 +242,7 @@ function createTargets() {
 		for (let j = 0; j < columns; j++) {
 			const pos = new THREE.Vector3(startX + j * spacing, startY + i * 4, -8)
 			const quat = new THREE.Quaternion(0, 0, 0, 1)
-			const target = createBoxWithPhysics(
-				1,
-				2,
-				1,
-				5,
-				pos,
-				quat,
-				targetMaterial
-			)
+			const target = createBoxWithPhysics(1, 2, 1, 5, pos, quat, targetMaterial)
 			target.castShadow = true
 		}
 	}
