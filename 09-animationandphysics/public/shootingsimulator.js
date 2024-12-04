@@ -149,6 +149,18 @@ function createBooth() {
 		new THREE.Quaternion(0, 0, 0, 1),
 		sideMaterial
 	)
+
+	const standHeight = 2.5
+	const standDepth = 1
+	createBoxWithPhysics(
+		boothWidth,
+		standHeight,
+		standDepth,
+		0,
+		new THREE.Vector3(0, standHeight / 2, 0.5),
+		new THREE.Quaternion(0, 0, 0, 1),
+		sideMaterial
+	)
 }
 
 function createTargets() {
