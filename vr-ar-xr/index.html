@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Basic Scene</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+	<link type="text/css" rel="stylesheet" href="style.css" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r126/three.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+	<script type="module">
+		import { ARButton } from "https://unpkg.com/three@0.126.0/examples/jsm/webxr/ARButton.js";
+		import { FBXLoader } from "https://unpkg.com/three@0.126.0/examples/jsm/loaders/FBXLoader.js";
+
+		let camera, scene, renderer;
+
+		initConfiguration();
+		initScene();
+
+		function initConfiguration() {
+			const container = document.createElement("div");
+			document.body.appendChild(container);
+
+			// Scene
+			scene = new THREE.Scene();
+
+			// Camera
+			camera = new THREE.PerspectiveCamera(
+				70,
+				window.innerWidth / window.innerHeight,
+				0.01,
+				40
+			);
+
+			camera.position.set(0, 3, 3);
+			camera.rotation.set(-0.4, 0, 0);
+
+			renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			// -----> Enable the renderer for WebXR
+			renderer.xr.enabled = true;
+			container.appendChild(renderer.domElement);
+			// Add the AR button to the body of the DOM
+			document.body.appendChild(ARButton.createButton(renderer));
+			renderer.setAnimationLoop(render);
+		}
+
+		function initScene() {
+			var light = new THREE.HemisphereLight(
+				0xffffbb, // Sky Color
+				0x080820, // Ground Color
+				1 // Intensity
+			);
+			light.position.set(0.5, 1, 0.25);
+			scene.add(light);
+
+			// AddObjects();
+			addInteraction();
+			AddObjectsFBX();
+			function AddObjectsFBX() {
+				// 3D FBX
+				const fbxLoader = new FBXLoader();
+				fbxLoader.load(
+					"https://cdn.glitch.global/5d9c6a9d-3f29-4b7d-a19e-ce0a2f4e62ec/Escena.fbx?v=1734378441097",
+					(object) => {
+						object.traverse((child) => {
+							object.scale.set(1, 1, 1);
+							object.position.set(0, 0, -1);
+							scene.add(object);
+						});
+					}
+				);
+			}
+
+			function addInteraction() {
+				window.addEventListener("touchstart", onclickChangeAlpha);
+				function onclickChangeAlpha(event) {
+					var selectedObject;
+					var raycaster = new THREE.Raycaster();
+					var mouse = new THREE.Vector2();
+					// calculate pointer position in normalized device coordinates
+					// (-1 to +1) for both components
+					mouse.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+					mouse.y = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
+					raycaster.setFromCamera(mouse, camera);
+					// Return array
+					var intersects = raycaster.intersectObjects(scene.children, true);
+					selectedObject = intersects[0];
+					for (let i = 0; i < intersects.length; i++) {
+						if (intersects[i].object.material.opacity < 0.5)
+							intersects[i].object.material.opacity = 0.8;
+						else intersects[i].object.material.opacity = 0.3;
+					}
+				}
+			}
+
+			// function AddObjects() {
+			// 	const material = new THREE.MeshPhongMaterial({
+			// 		shininess: 6,
+			// 		flatShading: true,
+			// 		transparent: 1,
+			// 		opacity: 0.8,
+			// 	});
+
+			// 	SetObject(
+			// 		new THREE.CylinderGeometry(0.2, 0.2, 1, 32),
+			// 		material.clone(),
+			// 		[-0.5, 1.5, 0],
+			// 		new THREE.Color("rgb(226,35,0)")
+			// 	);
+			// 	SetObject(
+			// 		new THREE.BoxGeometry(1, 1, 1),
+			// 		material.clone(),
+			// 		[0.5, 1.5, 0],
+			// 		new THREE.Color("rgb(100,100, 255)")
+			// 	);
+			// 	SetObject(
+			// 		new THREE.SphereGeometry(0.6, 20, 20),
+			// 		material.clone(),
+			// 		[0, 1.5, -0.5],
+			// 		new THREE.Color("rgb(0,255,0)")
+			// 	);
+
+			// 	function SetObject(geometry, mat, position, color) {
+			// 		mat.color = color;
+			// 		let mesh = new THREE.Mesh(geometry, mat.clone());
+			// 		mesh.position.set(position[0], position[1], position[2]);
+			// 		mesh.scale.set(0.1, 0.1, 0.1);
+			// 		scene.add(mesh);
+			// 	}
+			// }
+		}
+
+		function render() {
+			renderer.render(scene, camera);
+		}
+	</script>
+</body>
+
+</html>
