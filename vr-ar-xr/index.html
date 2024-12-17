@@ -17,7 +17,7 @@
 		let camera, scene, renderer;
 		let controller1, controller2;
 		const clock = new THREE.Clock();
-		const gravity = -9.8; // Opcional si quieres simular gravedad
+		const gravity = -9.8;
 
 		initConfiguration();
 		initScene();
@@ -26,10 +26,8 @@
 			const container = document.createElement("div");
 			document.body.appendChild(container);
 
-			// Scene
 			scene = new THREE.Scene();
 
-			// Camera
 			camera = new THREE.PerspectiveCamera(
 				70,
 				window.innerWidth / window.innerHeight,
@@ -46,39 +44,31 @@
 			renderer.xr.enabled = true;
 			container.appendChild(renderer.domElement);
 
-			// Añade el botón AR
 			document.body.appendChild(ARButton.createButton(renderer));
 			renderer.setAnimationLoop(render);
 
-			// Configurar controladores VR (si están disponibles)
 			controller1 = renderer.xr.getController(0);
 			controller2 = renderer.xr.getController(1);
 			scene.add(controller1);
 			scene.add(controller2);
 
-			// Eventos para lanzar la pelota
 			controller1.addEventListener('selectstart', throwBall);
 			controller2.addEventListener('selectstart', throwBall);
-			window.addEventListener("touchstart", throwBall); // Para pantallas táctiles
+			window.addEventListener("touchstart", throwBall);
 		}
 
 		function initScene() {
 			var light = new THREE.HemisphereLight(
-				0xffffbb, // Sky Color
-				0x080820, // Ground Color
-				1 // Intensity
+				0xffffbb,
+				0x080820,
+				1
 			);
 			light.position.set(0.5, 1, 0.25);
 			scene.add(light);
 
-			// Cargar la escena con la canasta (Escena.fbx)
 			AddObjectsFBX();
 
-			// Si quieres aún la interacción de cambiar opacidad, puedes dejarla.
-			// addInteraction(); // Desactivado temporalmente si interfiere con el lanzamiento.
-
 			function AddObjectsFBX() {
-				// 3D FBX: Suponemos que la canasta está en este modelo
 				const fbxLoader = new FBXLoader();
 				fbxLoader.load(
 					"https://cdn.glitch.global/5d9c6a9d-3f29-4b7d-a19e-ce0a2f4e62ec/Escena.fbx?v=1734378441097",
@@ -86,7 +76,6 @@
 						object.traverse((child) => {
 							object.scale.set(1, 1, 1);
 							object.position.set(0, -5, -5);
-							// Suponemos que la canasta está a 30 unidades frente a la cámara
 							scene.add(object);
 						});
 					}
@@ -95,29 +84,20 @@
 		}
 
 		function throwBall() {
-			// Crear pelota
 			const ballGeometry = new THREE.SphereGeometry(0.2, 16, 16);
 			const ballMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
 			const ball = new THREE.Mesh(ballGeometry, ballMaterial);
 
-			// Posición inicial de la pelota desde la cámara
 			const startPosition = new THREE.Vector3();
 			camera.getWorldPosition(startPosition);
 			ball.position.copy(startPosition);
 			scene.add(ball);
 
-			// Definir el punto objetivo (la canasta)
-			// Aquí se asume que la canasta está en la posición (0,2,-30) por ejemplo
-			// Ajusta según tu escena
-			const targetPosition = new THREE.Vector3(0, 2, -5);
+			const direction = new THREE.Vector3();
+			camera.getWorldDirection(direction);
 
-			// Calcular dirección hacia la canasta
-			const direction = new THREE.Vector3().subVectors(targetPosition, startPosition).normalize();
+			const velocity = 30;
 
-			// Velocidad inicial de la pelota
-			const velocity = 25; // Ajusta para mayor o menor potencia
-
-			// Datos para animar la pelota
 			const ballData = { ball, direction, time: 0 };
 
 			animateBall(ballData, velocity);
@@ -128,15 +108,12 @@
 				const delta = clock.getDelta();
 				ballData.time += delta;
 
-				// Movimiento lineal hacia la canasta
-				ballData.ball.position.add(
+        ballData.ball.position.add(
 					ballData.direction.clone().multiplyScalar(velocity * delta)
 				);
 
-				// Simula gravedad (opcional)
 				ballData.ball.position.y += 0.5 * gravity * Math.pow(ballData.time, 2);
 
-				// Condición para eliminar la pelota si se va muy lejos o cae
 				if (ballData.ball.position.y < -10 ||
 					ballData.ball.position.z < -100) {
 					scene.remove(ballData.ball);
