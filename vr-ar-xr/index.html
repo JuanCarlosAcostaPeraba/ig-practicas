@@ -10,6 +10,7 @@
 </head>
 
 <body>
+	<script src="./ammo.js"></script>
 	<script type="module">
 		import { ARButton } from "https://unpkg.com/three@0.126.0/examples/jsm/webxr/ARButton.js";
 		import { FBXLoader } from "https://unpkg.com/three@0.126.0/examples/jsm/loaders/FBXLoader.js";
@@ -108,7 +109,7 @@
 				const delta = clock.getDelta();
 				ballData.time += delta;
 
-        ballData.ball.position.add(
+				ballData.ball.position.add(
 					ballData.direction.clone().multiplyScalar(velocity * delta)
 				);
 
